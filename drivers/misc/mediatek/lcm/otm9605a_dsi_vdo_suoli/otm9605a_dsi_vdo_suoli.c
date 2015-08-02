@@ -546,7 +546,7 @@ static unsigned int lcm_compare_id(void)
 
 
 
-	if((id == 0x96)
+	if(id == 0x96)
 	{
 		return 1;
 	}
