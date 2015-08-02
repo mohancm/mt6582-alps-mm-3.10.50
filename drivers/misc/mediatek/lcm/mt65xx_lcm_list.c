@@ -19,6 +19,7 @@
 #endif
 
 extern LCM_DRIVER otm9605a_dsi_vdo_lg_lcm_drv;
+extern LCM_DRIVER otm9605a_dsi_vdo_suoli_lcm_drv;
 extern LCM_DRIVER otm1282a_hd720_dsi_vdo_60hz_lcm_drv;
 extern LCM_DRIVER otm1282a_hd720_dsi_vdo_lcm_drv;
 extern LCM_DRIVER vvx10f008b00_wuxga_dsi_vdo_lcm_drv;
@@ -224,6 +225,9 @@ LCM_DRIVER* lcm_driver_list[] =
 {
 #if defined(OTM9605A_DSI_VDO_LG) 
 	&otm9605a_dsi_vdo_lg_lcm_drv,
+#endif
+#if defined(OTM9605A_DSI_VDO_SUOLI) 
+	&otm9605a_dsi_vdo_suoli_lcm_drv,
 #endif
 #if defined(HX8379C_FWVGA_DSI_VDO_TCL)
 		&hx8379c_fwvga_dsi_vdo_tcl_lcm_drv,
