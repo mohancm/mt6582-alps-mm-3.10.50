@@ -63,7 +63,7 @@
 /* HW keycode [0 ~ 71] -> Linux keycode */
 #define KPD_INIT_KEYMAP()	\
 {	\
-	[1] = KEY_VOLUMEUP,		\
+	[0] = KEY_VOLUMEUP,		\
 	[2] = KEY_VOLUMEDOWN,		\
 }	 
 /*****************************************************************/
