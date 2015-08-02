@@ -19,6 +19,7 @@
 #endif
 
 extern LCM_DRIVER otm9605a_dsi_vdo_lg_lcm_drv;
+extern LCM_DRIVER otm9605a_dsi_vdo_suoli_lcm_drv;
 extern LCM_DRIVER lp079x01_lcm_drv;
 extern LCM_DRIVER hx8369_lcm_drv;
 extern LCM_DRIVER hx8369_6575_lcm_drv;
@@ -163,6 +164,9 @@ LCM_DRIVER* lcm_driver_list[] =
 { 
 #if defined(OTM9605A_DSI_VDO_LG) 
 	&otm9605a_dsi_vdo_lg_lcm_drv,
+#endif
+#if defined(OTM9605A_DSI_VDO_SUOLI) 
+	&otm9605a_dsi_vdo_suoli_lcm_drv,
 #endif
 #if defined(R63311_FHD_DSI_VDO)
 	&r63311_fhd_dsi_vedio_lcm_drv,
