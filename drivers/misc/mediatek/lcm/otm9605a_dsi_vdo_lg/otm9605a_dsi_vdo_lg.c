@@ -139,6 +139,7 @@ static struct LCM_setting_table
 
 
 static struct LCM_setting_table lcm_initialization_setting[] =
+
 {
 
 	{0x00,1,{0x00}},
@@ -267,12 +268,13 @@ static struct LCM_setting_table lcm_initialization_setting[] =
 	{0xE1,16,{0x04,0x0B,0x10,0x0D,0x06,0x0E,0x0A,0x09,0x05,0x08,0x0E,0x08,0x0F,0x14,0x0F,0x0A}},		
 
 	{0x00,1,{0x00}},
-	{0xE2,16,{0x04,0x0B,0x10,0x0D,0x06,0x0D,0x0A,0x09,0x05,0x08,0x0E,0x08,0x0F,0x14,0x0F,0x0A}},
+	{0xE1,16,{0x02,0x10,0x16,0x0F,0x07,0x12,0x0A,0x09,0x04,0x08,0x0A,0x08,0x0F,0x12,0x0E,0x08}},
 	
 
 
 	{0x00,1,{0x00}}, 
-	{0xff,3,{0xff,0xff,0xff}},
+	{0xE2,16,{0x02,0x10,0x16,0x0F,0x07,0x12,0x0A,0x09,0x04,0x08,0x0A,0x08,0x0F,0x12,0x0E,0x08}},
+
 	
 
 	
@@ -365,7 +367,7 @@ static void lcm_get_params(LCM_PARAMS *params)
     params->height = FRAME_HEIGHT;
 
     // enable tearing-free
-    params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
+	params->dbi.te_mode 				= LCM_DBI_TE_MODE_DISABLED;  //LCM_DBI_TE_MODE_VSYNC_ONLY;
     params->dbi.te_edge_polarity     = LCM_POLARITY_RISING;
 
 #if (LCM_DSI_CMD_MODE)
@@ -392,14 +394,14 @@ static void lcm_get_params(LCM_PARAMS *params)
 
     params->dsi.PS=LCM_PACKED_PS_24BIT_RGB888;
 
-    params->dsi.vertical_sync_active     = 5;
-    params->dsi.vertical_backporch   = 15;
+    params->dsi.vertical_sync_active     = 4;
+    params->dsi.vertical_backporch   = 16;
     params->dsi.vertical_frontporch  = 15;
     params->dsi.vertical_active_line     = FRAME_HEIGHT;
 
-    params->dsi.horizontal_sync_active   = 8; //20
-    params->dsi.horizontal_backporch     = 26; //46
-    params->dsi.horizontal_frontporch    = 21;
+    params->dsi.horizontal_sync_active   = 10; //20
+    params->dsi.horizontal_backporch     = 64; //46
+    params->dsi.horizontal_frontporch    = 64;
     params->dsi.horizontal_active_pixel  = FRAME_WIDTH;
 
 	params->dsi.compatibility_for_nvk = 0;		// this parameter would be set to 1 if DriverIC is NTK's and when force match DSI clock for NTK's
@@ -411,8 +413,8 @@ static void lcm_get_params(LCM_PARAMS *params)
 	//	params->dsi.CLK_TRAIL = 10;
     // Bit rate calculation
 		//1 Every lane speed
-		params->dsi.pll_div1=0;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
-		params->dsi.pll_div2=1;		// div2=0,1,2,3;div1_real=1,2,4,4	
+		params->dsi.pll_div1=1;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
+		params->dsi.pll_div2=0;		// div2=0,1,2,3;div1_real=1,2,4,4	
 		params->dsi.fbk_div =15; // 19;  16  // fref=26MHz, fvco=fref*(fbk_div+1)*2/(div1_real*div2_real)	
 
 }
