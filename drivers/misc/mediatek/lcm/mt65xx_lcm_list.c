@@ -17,7 +17,7 @@
 #else
 #define LCD_DEBUG(fmt)  printk(fmt)
 #endif
-
+extern LCM_DRIVER otm9605a_ruixin_RX_466OTM_977A_AUO_dsi_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_lg_lcm_drv;
 extern LCM_DRIVER otm9605a_qhd_dsi_vdo_u701b_ykl_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_suoli_lcm_drv;
