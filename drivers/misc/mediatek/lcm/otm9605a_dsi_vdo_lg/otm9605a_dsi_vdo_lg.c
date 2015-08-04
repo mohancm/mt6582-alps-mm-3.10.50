@@ -68,7 +68,7 @@
 *
 *****************************************************************************/
 
-#ifndef BUILD_LK
+#ifndef BUILD_LK	
 #include <linux/string.h>
 #endif
 #include "lcm_drv.h"
@@ -109,7 +109,7 @@
 
 static LCM_UTIL_FUNCS lcm_util = {0};
 
-#define SET_RESET_PIN(v)    (lcm_util.set_reset_pin((v)))
+#define SET_RESET_PIN(v)    (lcm_util.set_reset_pin((v)))	//I think that is GPIO112
 
 
 #define UDELAY(n)                                           (lcm_util.udelay(n))
@@ -128,7 +128,7 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 #define read_reg_v2(cmd, buffer, buffer_size)                   lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
 
-#define   LCM_DSI_CMD_MODE							0
+#define   LCM_DSI_CMD_MODE							0	//Not CMD because it is VDO
 
 static struct LCM_setting_table
 {
@@ -193,7 +193,9 @@ static struct LCM_setting_table lcm_initialization_setting[] =
 	{0x00,1,{0xA2}}, // pl_width, pch_dri_pch_nop
 	{0xC0,3,{0x0C,0x05,0x02}},	
 
-
+	{0x00,1,{0xA6}},//zigzag off
+	{0xB3,1,{0x27}},
+	
 	//GOA mapping
 	{0x00,1,{0x80}},	//GOA mapping
 	{0xCB,10,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}},																
@@ -394,7 +396,7 @@ static void lcm_get_params(LCM_PARAMS *params)
 
     params->dsi.PS=LCM_PACKED_PS_24BIT_RGB888;
 
-    params->dsi.vertical_sync_active     = 4;
+    params->dsi.vertical_sync_active     = 4;	//This parameters Can't fix problem with bad lines
     params->dsi.vertical_backporch   = 16;
     params->dsi.vertical_frontporch  = 15;
     params->dsi.vertical_active_line     = FRAME_HEIGHT;
@@ -433,7 +435,7 @@ static unsigned int lcm_compare_id(void)
     	SET_RESET_PIN(1);
 	MDELAY(20);  
 
-	lcd_id =  mt_get_gpio_in(GPIO112);
+	lcd_id =  mt_get_gpio_in(GPIO112);	//Get ID
 
 #ifdef BUILD_LK
 	printf("zhuoshineng LK otm9605a debug: otm9605a id = %d\n",lcd_id);
