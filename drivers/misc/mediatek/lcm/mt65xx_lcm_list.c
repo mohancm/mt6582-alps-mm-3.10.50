@@ -943,7 +943,7 @@ LCM_DRIVER* lcm_driver_list[] =
 #endif
 
 #if defined(OTM9605A_DSI_VDO_DJN_QHD_IPS)
-    &otm9605a_dsi_vdo_djn_qhd_ips,
+    &otm9605a_dsi_vdo_djn_qhd_ips_lcm_drv,
 #endif
 
 #if defined(R63419_FHD_TRULY_PHANTOM_2K_CMD_OK)
