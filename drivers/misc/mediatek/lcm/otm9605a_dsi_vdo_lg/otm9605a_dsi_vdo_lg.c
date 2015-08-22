@@ -317,7 +317,7 @@ static void push_table(struct LCM_setting_table *table, unsigned int count, unsi
     {
 
         unsigned cmd;
-        if (i%2=0)  {
+        if (i%2==0)  {
         	cmd = table[i+1].cmd;  } 
         else
         {
