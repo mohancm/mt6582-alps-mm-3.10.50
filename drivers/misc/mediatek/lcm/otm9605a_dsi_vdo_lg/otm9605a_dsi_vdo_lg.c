@@ -313,11 +313,13 @@ static void push_table(struct LCM_setting_table *table, unsigned int count, unsi
 {
     unsigned int i;
 
-    for(i = 1; i < count; i++)
+    for(i = 0; i < count; i++)
     {
 
         unsigned cmd;
-        cmd = table[i].cmd;
+        if(i%2=0) {
+        cmd = table[i+1].cmd; } else {
+        cmd = table[i-1].cmd; };
 
         switch (cmd)
         {
