@@ -395,10 +395,10 @@ static void lcm_get_params(LCM_PARAMS *params)
     params->dsi.vertical_sync_active     = 5;
     params->dsi.vertical_backporch   = 15;
     params->dsi.vertical_frontporch  = 15;
-    params->dsi.vertical_active_line     = FRAME_HEIGHT;
+    params->dsi.vertical_active_line     = FRAME_HEIGHT+1;
 
-    params->dsi.horizontal_sync_active   = 8; //20
-    params->dsi.horizontal_backporch     = 26; //46
+    params->dsi.horizontal_sync_active   = 20; //20
+    params->dsi.horizontal_backporch     = 46; //46
     params->dsi.horizontal_frontporch    = 21;
     params->dsi.horizontal_active_pixel  = FRAME_WIDTH;
 
