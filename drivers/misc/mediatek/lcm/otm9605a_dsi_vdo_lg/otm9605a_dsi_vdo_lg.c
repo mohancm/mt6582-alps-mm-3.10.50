@@ -313,7 +313,7 @@ static void push_table(struct LCM_setting_table *table, unsigned int count, unsi
 {
     unsigned int i;
 
-    for(i = 0; i < count; i++)
+    for(i = 1; i < count; i++)
     {
 
         unsigned cmd;
@@ -411,7 +411,7 @@ static void lcm_get_params(LCM_PARAMS *params)
 	//	params->dsi.CLK_TRAIL = 10;
     // Bit rate calculation
 		//1 Every lane speed
-		params->dsi.pll_div1=0;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
+		params->dsi.pll_div1=1;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
 		params->dsi.pll_div2=1;		// div2=0,1,2,3;div1_real=1,2,4,4	
 		params->dsi.fbk_div =15; // 19;  16  // fref=26MHz, fvco=fref*(fbk_div+1)*2/(div1_real*div2_real)	
 
