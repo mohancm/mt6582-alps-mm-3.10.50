@@ -128,7 +128,7 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 #define read_reg_v2(cmd, buffer, buffer_size)                   lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
 
-#define   LCM_DSI_CMD_MODE							1
+#define   LCM_DSI_CMD_MODE							0
 
 static struct LCM_setting_table
 {
@@ -152,8 +152,8 @@ static struct LCM_setting_table lcm_initialization_setting[] =
 	{0x00,1,{0x92}}, // mipi 2 lane
 	{0xFF,2,{0x10,0x02}},	
 
-	{0x00,1,{0xB4}},	
-	{0xC0,1,{0x50}},//inversion	
+	//{0x00,1,{0xB4}},	
+	//{0xC0,1,{0x50}},//inversion	
 
 	
 	{0x00,1,{0x80}},
