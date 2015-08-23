@@ -128,7 +128,7 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 #define read_reg_v2(cmd, buffer, buffer_size)                   lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
 
-#define   LCM_DSI_CMD_MODE							0
+#define   LCM_DSI_CMD_MODE							1
 
 static struct LCM_setting_table
 {
