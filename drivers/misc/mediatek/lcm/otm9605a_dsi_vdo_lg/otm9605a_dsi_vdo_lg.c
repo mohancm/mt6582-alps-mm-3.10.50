@@ -402,10 +402,10 @@ static void lcm_get_params(LCM_PARAMS *params)
     params->dsi.vertical_sync_active     = 5;
     params->dsi.vertical_backporch   = 15;
     params->dsi.vertical_frontporch  = 15;
-    params->dsi.vertical_active_line     = FRAME_HEIGHT+1;
+    params->dsi.vertical_active_line     = FRAME_HEIGHT;
 
-    params->dsi.horizontal_sync_active   = 20; //20
-    params->dsi.horizontal_backporch     = 46; //46
+    params->dsi.horizontal_sync_active   = 8; //20
+    params->dsi.horizontal_backporch     = 26; //46
     params->dsi.horizontal_frontporch    = 21;
     params->dsi.horizontal_active_pixel  = FRAME_WIDTH;
 
@@ -419,7 +419,7 @@ static void lcm_get_params(LCM_PARAMS *params)
     // Bit rate calculation
 		//1 Every lane speed
 		params->dsi.pll_div1=0;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
-		params->dsi.pll_div2=0;		// div2=0,1,2,3;div1_real=1,2,4,4	
+		params->dsi.pll_div2=1;		// div2=0,1,2,3;div1_real=1,2,4,4	
 		params->dsi.fbk_div =15; // 19;  16  // fref=26MHz, fvco=fref*(fbk_div+1)*2/(div1_real*div2_real)	
 
 }
