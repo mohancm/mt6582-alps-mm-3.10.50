@@ -53,7 +53,7 @@ static wait_queue_head_t _dsi_wait_queue;
 static wait_queue_head_t _dsi_dcs_read_wait_queue;
 static wait_queue_head_t _dsi_wait_bta_te;
 static wait_queue_head_t _dsi_wait_ext_te;
-wait_queue_head_t _dsi_wait_vm_done_queue;
+static wait_queue_head_t _dsi_wait_vm_done_queue;
 #endif
 static bool waitRDDone = false;
 //static unsigned int _dsi_reg_update_wq_flag = 0;
@@ -91,10 +91,6 @@ static PDSI_PHY_REGS const DSI_PHY_REG = (PDSI_PHY_REGS)(MIPI_CONFIG_BASE);
 static PDSI_CMDQ_REGS const DSI_CMDQ_REG = (PDSI_CMDQ_REGS)(DSI_BASE+0x180);
 //static PLCD_REGS const LCD_REG = (PLCD_REGS)(LCD_BASE);
 
-//Line added by mickal.ma
-unsigned char ESD_CHECKING;
-static bool g_hs_mode = false;
-//End added by mickal.ma
 
 
 extern LCM_DRIVER *lcm_drv;
@@ -515,7 +511,7 @@ void DSI_InitVSYNC(unsigned int vsync_interval)
 #endif
 }
 
-BOOL _IsEngineBusy(void)
+static BOOL _IsEngineBusy(void)
 {
 	DSI_INT_STATUS_REG status;
 
@@ -2870,9 +2866,6 @@ bool DSI_esd_check(void)
 	DISP_LOG_PRINT(ANDROID_LOG_INFO, "DSI", " End polling DSI VM done ready!!!\n");
 #endif
 #endif
-	//Line added by mickal.ma
-	ESD_CHECKING = TRUE;
-
 	//read DriverIC and check ESD
 	result = lcm_drv->esd_check();
 	//restore video mode
@@ -4808,27 +4801,6 @@ void fbconfig_DSI_Continuous_HS(int enable)
 
     tmp_reg.HSTX_CKLP_EN = enable;
     OUTREG32(&DSI_REG->DSI_TXRX_CTRL, AS_UINT32(&tmp_reg));
-}
-
-
-void Tinno_set_HS_read()
-{    
-    DSI_TXRX_CTRL_REG tmp_reg = DSI_REG->DSI_TXRX_CTRL;
-	
-    tmp_reg.HSTX_CKLP_EN = 0;
-    OUTREG32(&DSI_REG->DSI_TXRX_CTRL, AS_UINT32(&tmp_reg));
-	DSI_clk_HS_mode(1);
-	DSI_EnableClk();
-	g_hs_mode = true;
-}
-
-void Tinno_restore_HS_read()
-{    
-    DSI_TXRX_CTRL_REG tmp_reg = DSI_REG->DSI_TXRX_CTRL;
-
-    tmp_reg.HSTX_CKLP_EN = 1;
-    OUTREG32(&DSI_REG->DSI_TXRX_CTRL, AS_UINT32(&tmp_reg));
-	g_hs_mode = false;
 }
 
 

@@ -456,13 +456,6 @@ int disphal_panel_enable(const LCM_DRIVER *lcm_drv, struct mutex* pLcmCmdMutex, 
         }
 
         mutex_lock(pLcmCmdMutex);
-          // [JSTINNO_SRC xiaoyan.yu,  add for supporting ea8061 can successfully go to sleep, DATE20141010-01 START
-        #ifdef EA8061V_DSI_VIDEO_AMOLED
-        if(lcm_drv != NULL)
-            lcm_drv->goto_suspend();
-        #endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
-        // JSTINNO_SRC xiaoyan.yu, DATE20141010-01 END]
-        // Waiting for de-couple mem_write done, then we can power off
         lcm_drv->suspend();
         mutex_unlock(pLcmCmdMutex);
 

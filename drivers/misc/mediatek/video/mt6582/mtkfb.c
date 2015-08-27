@@ -48,9 +48,7 @@
 #endif
 #include "disp_mgr.h"
 #include "disp_svp.h"
-#ifdef EA8061V_DSI_VIDEO_AMOLED
-#include <linux/miscdevice.h>//JSTINNO_SRC xiaoyan.yu,  add misc device for refering lcm name in EM ,DATE20140829-01 LINE
-#endif
+
 //#define FPGA_DEBUG_PAN
 #define ALIGN_TO(x, n)  \
 	(((x) + ((n) - 1)) & ~((n) - 1))
@@ -156,8 +154,6 @@ extern unsigned int is_video_mode_running;
 extern unsigned int isAEEEnabled;
 extern spinlock_t DispConfigLock;
 extern disp_session_config disp_config;
-extern wait_queue_head_t _dsi_wait_vm_done_queue;
-extern BOOL _IsEngineBusy(void);
 // ---------------------------------------------------------------------------
 //  local function declarations
 // ---------------------------------------------------------------------------
@@ -693,12 +689,9 @@ static int mtkfb_pan_display_impl(struct fb_var_screeninfo *var, struct fb_info 
         if (isAEEEnabled && i == ASSERT_LAYER) {
             job->input[i].dirty = 0;
         } else {
-//Eric Yan FTM camera test display error
-#if 0
             job->input[i].layer_id = i;
             job->input[i].layer_enable = 0;
             job->input[i].dirty = 1;
-#endif
         }
     }
     job->input[FB_LAYER].layer_id = FB_LAYER;
@@ -2410,7 +2403,7 @@ void mtkfb_disable_non_fb_layer(void)
             continue;
 
         if (cached_layer_config[id].addr >= fb_pa &&
-            cached_layer_config[id].addr <= (fb_pa+(DISP_GetVRamSize()-1)))
+            cached_layer_config[id].addr < (fb_pa+DISP_GetVRamSize()))
             continue;
 
         DISP_LOG_PRINT(ANDROID_LOG_INFO, "LCD", "  disable(%d)\n", id);
@@ -2647,121 +2640,6 @@ static void mtkfb_fb_565_to_888(void* fb_va)
         s += (ALIGN_TO(xres, disphal_get_fb_alignment()) - xres);
     }
 }
-#if 1 //yixuhong add start,show lcd info
-char tinno_lcm_name[256] = {"unknow lcd"};
-
-static void tinno_find_lcd_name(void)
-{
-    char *p, *q;
-
-    p = strstr(saved_command_line, "lcm=");
-    if(p == NULL)
-    {
-        return ;
-    }
-
-    p += 6;
-    if((p - saved_command_line) > strlen(saved_command_line+1))
-    {
-        goto done;
-    }
-
-    printk("%s, %s\n", __func__, p);
-    q = p;
-    while(*q != ' ' && *q != '\0')
-        q++;
-
-    memset((void*)tinno_lcm_name, 0, sizeof(tinno_lcm_name));
-    strncpy((char*)tinno_lcm_name, (const char*)p, (int)(q-p));
-
-    printk("%s, %s\n", __func__, tinno_lcm_name);
-
-done:
-    return ;
-}
-
-static ssize_t lcd_desc_show(struct device *dev,
-                             struct device_attribute *attr,
-                             char *buf)
-{
-    return sprintf(buf, "%s\n", tinno_lcm_name);
-}
-static DEVICE_ATTR(lcm_info, 0444, lcd_desc_show, NULL);
-
-static void tinno_create_attr(struct platform_device *pdev)
-{
-    tinno_find_lcd_name();
-    if(device_create_file(&pdev->dev, &dev_attr_lcm_info))
-    {
-        printk("LIMI==> create lcd_info file error\n");
-    }
-}
-
-static int tinno_delete_attr(struct platform_device *pdev)
-{
-    if(pdev == NULL)
-    {
-        return -EINVAL;
-    }
-    device_remove_file(&pdev->dev, &dev_attr_lcm_info);
-}
-#endif //yixuhong add end,show lcd info
-#ifdef EA8061V_DSI_VIDEO_AMOLED
-extern LCM_DRIVER *lcm_drv;
-// [JSTINNO_SRC xiaoyan.yu,  add misc device for refering lcm name in EM, DATE20140829-01 START
-static ssize_t lcm_panel_read(struct file *file, char __user *ubuf, size_t count, loff_t *offset)
-{	
-	int ret = 0;
-        #if 0	
-	LCM_DRIVER *lcm_drv = pgc->plcm->drv;
-	if(lcm_drv){
-		ret = simple_read_from_buffer(ubuf, count, offset,  lcm_drv->name, strlen(lcm_drv->name));
-	}else{
-		ret = -EIO;
-	}
-        #endif
-	return ret;
-}
-long lcm_panel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-        int ret = 0;
-
-        printk("lcm_panel_ioctl cmd=%d\n",cmd);
-
-        switch(cmd)
-        {
-                case 0:
-                {
-                        if(lcm_drv->change_backligth_to_dim_mode() != NULL)
-                        {
-                                printk("lcm_panel_ioctl change_backligth_to_dim_mode\n");
-                                lcm_drv->change_backligth_to_dim_mode();
-                        }		
-                        return ret;
-                }
-                default:
-                {
-                        printk("[lcm_panel]ioctl not supported, 0x%08x\n", cmd);
-                }
-        }
-        return ret;
-}
-//#endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
-
-static const struct file_operations lcm_panel_fops = {
-	.owner = THIS_MODULE,
-	.unlocked_ioctl 	    = lcm_panel_ioctl,
-	.read = lcm_panel_read,
-};
-
-static struct miscdevice lcm_panel_device = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = "lcm_panel",
-	.fops = &lcm_panel_fops,
-};
-#endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
-
-// JSTINNO_SRC xiaoyan.yu, DATE20140829-01 END]
 
 /* Called by LDM binding to probe and attach a new device.
  * Initialization sequence:
@@ -2832,17 +2710,7 @@ static int mtkfb_probe(struct device *dev)
 
     MTK_FB_BPP   = DISP_GetScreenBpp();
     MTK_FB_PAGES = DISP_GetPages();
-    #ifdef EA8061V_DSI_VIDEO_AMOLED
-        // [JSTINNO_SRC xiaoyan.yu,  add misc device for refering lcm name in EM, DATE20140829-01 START
-        {
-                int ret = misc_register(&lcm_panel_device);
-                if (ret) {
-                 misc_deregister(&lcm_panel_device);
-                 printk(KERN_ERR "lcm_panel_device device register failed (%d)\n", ret);
-                }
-        }
-        // JSTINNO_SRC xiaoyan.yu, DATE20140829-01 END]
-    #endif
+
     if(DISP_IsLcmFound() && DISP_EsdRecoverCapbility())
     {
         esd_recovery_task = kthread_create(esd_recovery_kthread, NULL, "esd_recovery_kthread");
@@ -3031,7 +2899,6 @@ static int mtkfb_probe(struct device *dev)
     }
 #endif
     MSG_FUNC_LEAVE();
-    tinno_create_attr(pdev);//yixuhong 20140414 add to create lcd_info attr
     return 0;
 
 cleanup:
@@ -3054,7 +2921,6 @@ static int mtkfb_remove(struct device *dev)
     mtkfb_free_resources(fbdev, saved_state);
 
     MSG_FUNC_LEAVE();
-    tinno_delete_attr(dev);//yixuhong 20140414 add to delete lcd_info attr
     return 0;
 }
 
@@ -3101,7 +2967,7 @@ static void mtkfb_shutdown(struct device *pdev)
 	is_early_suspended = TRUE;
 	DISP_PrepareSuspend();
     // Wait for disp finished.
-    if (wait_event_interruptible_timeout(_dsi_wait_vm_done_queue, !_IsEngineBusy(), HZ/10) == 0)
+    if (wait_event_interruptible_timeout(disp_done_wq, !disp_running, HZ/10) == 0)
     {
         MTKFB_WRAN("[FB Driver] Wait disp finished timeout in shut_down\n");
     }
@@ -3232,7 +3098,6 @@ int hdmi_conn_disp_path(void)
 static void mtkfb_early_suspend(struct early_suspend *h)
 {
     int i=0;
-	int index=0;
     MSG_FUNC_ENTER();
 
     MTKFB_INFO("[FB Driver] enter early_suspend\n");
@@ -3243,14 +3108,6 @@ static void mtkfb_early_suspend(struct early_suspend *h)
     mt65xx_leds_brightness_set(MT65XX_LED_TYPE_LCD, LED_OFF);
 #endif
 #endif
-
-#if defined(CONFIG_PROJECT_S5400)
-	for(index=0;index<8;index++)
-	{
-		mtkfb_clear_lcm();
-	}
-#endif
-	
     if (!lcd_fps)
         msleep(30);
     else
@@ -3279,7 +3136,7 @@ static void mtkfb_early_suspend(struct early_suspend *h)
 
     DISP_PrepareSuspend();
     // Wait for disp finished.
-    if (wait_event_interruptible_timeout(_dsi_wait_vm_done_queue, !_IsEngineBusy(), HZ/10) == 0)
+    if (wait_event_interruptible_timeout(disp_done_wq, !disp_running, HZ/10) == 0)
     {
         MTKFB_WRAN("[FB Driver] Wait disp finished timeout in early_suspend\n");
     }
@@ -3362,7 +3219,7 @@ static void mtkfb_late_resume(struct early_suspend *h)
     {
         mtkfb_clear_lcm();
     }
-	
+
 	sem_early_suspend_cnt++;
     up(&sem_early_suspend);
     mutex_unlock(&ScreenCaptureMutex);

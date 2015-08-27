@@ -146,9 +146,7 @@ DEFINE_SEMAPHORE(sem_update_screen);//linux 3.0 porting
 static BOOL isLCMFound 					= FALSE;
 // whether lcm is connected
 static BOOL isLCMConnected 				= FALSE;
-#ifdef EA8061V_DSI_VIDEO_AMOLED
-unsigned int g_backlight = 0;
-#endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
+
 /// Some utilities
 #define ALIGN_TO_POW_OF_2(x, n)  \
                 (((x) + ((n) - 1)) & ~((n) - 1))
@@ -735,7 +733,7 @@ static BOOL disp_drv_init_context(void)
 
 BOOL DISP_IsLcmFound(void)
 {
-        return isLCMFound; //isLCMConnected;  Modified by zhangxian for LCD esd check
+    return isLCMConnected;
 }
 
 BOOL DISP_IsContextInited(void)
@@ -901,8 +899,22 @@ DISP_STATUS DISP_Init(UINT32 fbVA, UINT32 fbPA, BOOL isLcmInited)
     dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayHeight = DISP_GetScreenHeight();
     dispif_info[MTKFB_DISPIF_PRIMARY_LCD].vsyncFPS = lcd_fps;
     
-    dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalHeight = DISP_GetPhysicalHeight();
-    dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalWidth = DISP_GetPhysicalWidth();    
+    if(dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayWidth * dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayHeight <= 240*432)
+    {
+        dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalHeight= dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalWidth= 0;
+    }
+    else if(dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayWidth * dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayHeight <= 320*480)
+    {
+        dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalHeight= dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalWidth= 0;
+    }
+    else if(dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayWidth * dispif_info[MTKFB_DISPIF_PRIMARY_LCD].displayHeight <= 480*854)
+    {
+        dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalHeight= dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalWidth= 0;
+    }
+    else
+    {
+        dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalHeight= dispif_info[MTKFB_DISPIF_PRIMARY_LCD].physicalWidth= 0;
+    }
     
     dispif_info[MTKFB_DISPIF_PRIMARY_LCD].isConnected = 1;
     
@@ -1062,11 +1074,7 @@ DISP_STATUS DISP_SetBacklight(UINT32 level)
         ret = DISP_STATUS_NOT_IMPLEMENTED;
         goto End;
     }
-        // [JSTINNO_SRC xiaoyan.yu,  modify for ea8061, DATE20141010-01 START		
-        #ifdef EA8061V_DSI_VIDEO_AMOLED
-        g_backlight = level;
-        #endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
-        // JSTINNO_SRC xiaoyan.yu, DATE20141010-01 END]
+    
     disphal_set_backlight(lcm_drv, &LcmCmdMutex, level);
 End:
     
@@ -1866,24 +1874,13 @@ static int _DISP_ConfigUpdateKThread(void *data)
 			}
 			// 2. Configure hw if dirty
 			if (DISP_IsDecoupleMode()) {
-			#if defined(CONFIG_PROJECT_S5400)
-				//add test tcp
-			    if (disp_acquire_buffer(buffer_queue) || dirty_flag.aal_dirty) {
-			        disp_running = 1;
-			        dirty_flag.aal_dirty = 1;
-			        _DISP_ConfigMemReadDatapath(&dirty_flag);
-			    } else {
-			        _DISP_StartSoftTimer();
-			    }
-				#else
-				if (disp_acquire_buffer(buffer_queue) || dirty_flag.aal_dirty) {
+				if (disp_acquire_buffer(buffer_queue) || dirty) {
 					disp_running = 1;
-					dirty_flag.aal_dirty = 1;
+					dirty_flag.aal_dirty = dirty;
 					_DISP_ConfigMemReadDatapath(&dirty_flag);
 				} else {
 					_DISP_StartSoftTimer();
 				}
-				#endif
 			} else {
 				if (dirty) {
 					disp_running = 1;
@@ -2731,13 +2728,6 @@ BOOL DISP_EsdRecover(void)
     }
     up(&sem_update_screen);
     DISP_UpdateScreen(0, 0, DISP_GetScreenWidth(), DISP_GetScreenHeight());
-        #ifdef EA8061V_DSI_VIDEO_AMOLED
-        {
-        //DISP_SetBacklight(g_backlight);
-                disphal_set_backlight(lcm_drv, &LcmCmdMutex, g_backlight);
-
-        }
-        #endif/*EA8061V_HD720_DSI_VIDEO_AMOLED*/
 
     return result;
 }
@@ -2750,6 +2740,7 @@ unsigned long DISP_GetLCMIndex(void)
 DISP_STATUS DISP_PrepareSuspend(void)
 {
     disphal_prepare_suspend();
+    // Waiting for de-couple mem_write done, then we can power off
     DISP_WaitMemWriteDoneIfNeeded();
     return DISP_STATUS_OK;
 }
