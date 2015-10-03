@@ -19,7 +19,7 @@
 #endif
 extern LCM_DRIVER otm9605a_dsi_vdo_djn_qhd_ips_lcm_drv;
 extern LCM_DRIVER otm9605a_ruixin_RX_466OTM_977A_AUO_dsi_vdo_qhd_lcm_drv;
-extern LCM_DRIVER otm9605a_dsi_vdo_lg_lcm_drv;
+extern LCM_DRIVER otm9605a_dsi_vdo_cs_lcm_drv;
 extern LCM_DRIVER otm9605a_qhd_dsi_vdo_u701b_ykl_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_suoli_lcm_drv;
 extern LCM_DRIVER otm1282a_hd720_dsi_vdo_60hz_lcm_drv;
@@ -225,8 +225,8 @@ extern LCM_DRIVER otm8019a_fwvga_dsi_vdo_boe_lcm_drv;
 //end by zhangdongfang
 LCM_DRIVER* lcm_driver_list[] = 
 {
-#if defined(OTM9605A_DSI_VDO_LG) 
-	&otm9605a_dsi_vdo_lg_lcm_drv,
+#if defined(OTM9605A_DSI_VDO_CS) 
+	&otm9605a_dsi_vdo_cs_lcm_drv,
 #endif
 #if defined(OTM9605A_RUIXIN_RX_466OTM_977A_AUO_DSI_VDO_QHD) 
 	&otm9605a_ruixin_RX_466OTM_977A_AUO_dsi_vdo_qhd_lcm_drv,
