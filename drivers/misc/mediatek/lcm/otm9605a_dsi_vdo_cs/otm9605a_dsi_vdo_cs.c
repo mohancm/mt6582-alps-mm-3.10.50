@@ -257,7 +257,7 @@ static struct LCM_setting_table lcm_sleep_out_setting[] =
 static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 {
     unsigned int i;
-
+/*
     for(i = 0; i < count; i++)
     {
 
@@ -280,7 +280,7 @@ static void push_table(struct LCM_setting_table *table, unsigned int count, unsi
              //   dsi_set_cmdq_dcs(cmd, table[i].count, table[i].para_list, force_update);
         }
     }
-
+*/
 }
 
 static void init_lcm_registers(void)
