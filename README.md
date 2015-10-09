@@ -1,10 +1,15 @@
-# Linux kernel source code for Highscreen Zera S rev.S
+Linux kernel source code for Highscreen Zera S rev.S
+====================================================
 
+ 
  Build kernel:
+ -------------
 
-$ ./z-bkernel.sh
+$ './z-bkernel.sh'
+
 
 
  Clean:
+ ------
 
-$ ./z-clean.sh
+$ './z-clean.sh'
