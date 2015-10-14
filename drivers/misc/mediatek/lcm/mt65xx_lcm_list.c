@@ -17,6 +17,7 @@
 #else
 #define LCD_DEBUG(fmt)  printk(fmt)
 #endif
+extern LCM_DRIVER otm9605a_qhd_dsi_vdo_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_djn_qhd_ips_lcm_drv;
 extern LCM_DRIVER otm9605a_ruixin_RX_466OTM_977A_AUO_dsi_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_cs_lcm_drv;
@@ -200,7 +201,7 @@ extern LCM_DRIVER r63419_fhd_truly_phantom_lcm_drv;
 extern LCM_DRIVER r63423_wqhd_truly_phantom_lcm_drv;
 extern LCM_DRIVER kr101ia2s_dsi_vdo_lcm_drv;
 extern LCM_DRIVER r69338_hd720_dsi_vdo_jdi_dw8755a_drv;
-extern LCM_DRIVER otm9605a_qhd_dsi_vdo_drv;
+//extern LCM_DRIVER otm9605a_qhd_dsi_vdo_drv;
 extern LCM_DRIVER ili9806e_dsi_vdo_fwvga_drv;
 //guomingyi 20141105 add for s4710bp start.
 extern LCM_DRIVER hx8369b_wvga_dsi_vdo_tinno_drv; 
@@ -225,6 +226,9 @@ extern LCM_DRIVER otm8019a_fwvga_dsi_vdo_boe_lcm_drv;
 //end by zhangdongfang
 LCM_DRIVER* lcm_driver_list[] = 
 {
+#if defined(OTM9605A_QHD_DSI_VDO) 
+        &otm9605a_qhd_dsi_vdo_lcm_drv,
+#endif
 #if defined(OTM9605A_DSI_VDO_CS) 
 	&otm9605a_dsi_vdo_cs_lcm_drv,
 #endif
@@ -954,9 +958,9 @@ LCM_DRIVER* lcm_driver_list[] =
     &r63423_wqhd_truly_phantom_lcm_drv,
 #endif
 
-#if defined(OTM9605A_QHD_DSI_VDO)
-	&otm9605a_qhd_dsi_vdo_drv,
-#endif
+//#if defined(OTM9605A_QHD_DSI_VDO)
+//	&otm9605a_qhd_dsi_vdo_drv,
+//#endif
 //guomingyi 20141105 add for s4710bp start.
 #if defined(HX8369B_WVGA_DSI_VDO_TINNO)
 	&hx8369b_wvga_dsi_vdo_tinno_drv,
