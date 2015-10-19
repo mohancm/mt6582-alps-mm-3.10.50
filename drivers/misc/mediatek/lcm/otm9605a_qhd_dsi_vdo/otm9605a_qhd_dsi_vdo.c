@@ -690,7 +690,7 @@ static unsigned int lcm_compare_id(void)
 // ---------------------------------------------------------------------------
 //  Get LCM Driver Hooks
 // ---------------------------------------------------------------------------
-LCM_DRIVER otm9605a_qhd_dsi_vdo_drv = {
+LCM_DRIVER otm9605a_qhd_dsi_vdo_lcm_drv= {
 	.name = "otm9605a_qhd_dsi_vdo",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params = lcm_get_params,
