@@ -69,7 +69,7 @@
 
 #define REGFLAG_DELAY             	(0XFE)
 #define REGFLAG_END_OF_TABLE      	(0x100)	// END OF REGISTERS MARKER
-#define GPIO_LCD_ID_PIN                 97
+#define GPIO_LCD_ID_PIN                 GPIO112
 
 
 #define LCM_DSI_CMD_MODE									0
