@@ -46,7 +46,7 @@ extern LCM_DRIVER otm9605a_ykl_LP047APTP018A_V01_AUO_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_rixin_NST500QH2542ANJ_V1_LG_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_ykl_LP045APTP225A_AUO_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605A_hongtao_HT498127A_V0_CPT_dsi_qhd_lcm_drv;
-extern LCM_DRIVER otm9605a_rixin_NST500QH2543ANJ_V1_LG_dsi_2_vdo_qhd_lcm_drv;
+//extern LCM_DRIVER otm9605a_rixin_NST500QH2543ANJ_V1_LG_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_ykl_LP050FPTP179A_CTC_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_hengsheng_HS050PQ_81C_CPT_dsi_2_vdo_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_hongsheng_HS4501276A_CMI_dsi_2_vdo_qhd_lcm_drv;
@@ -59,6 +59,7 @@ extern LCM_DRIVER  otm9605a_ykl_LP047HPTP056A_HSD_dsi_2_qhd_lcm_drv;
 extern LCM_DRIVER otm9605a_ykl_LP047HPTP042A_HSD_dsi_2_qhd_lcm_drv;
 extern LCM_DRIVER OTM9605A_MINGZE_MZ5D0N021_BOE_DSI_2_VDO_QHD_lcm_drv;
 extern LCM_DRIVER otm9605a_ruixin_RX_470OTM_977A_HSD_dsi_vdo_qhd_lcm_drv;
+extern LCM_DRIVER otm9605a_datong_DT55005A_AUO_dsi_2_qhd_lcm_drv;
 //new lcm end
 extern LCM_DRIVER otm9605a_qhd_dsi_vdo_lcm_drv;
 extern LCM_DRIVER otm9605a_dsi_vdo_djn_qhd_ips_lcm_drv;
@@ -275,7 +276,7 @@ LCM_DRIVER* lcm_driver_list[] =
 #endif
 
 #if defined(OTM9605A_DATONG_DT55005A_AUO_DSI_2_QHD)
-								&otm9605a_datong_DT55005A_AUO_dsi_2_qhd_lcm_drv,
+			&otm9605a_datong_DT55005A_AUO_dsi_2_qhd_lcm_drv,
 #endif	
 
 #if defined(OTM9605A_RIXIN_NST500QH2537ANJ_LG_DSI_2_VDO_QHD)
@@ -395,9 +396,9 @@ LCM_DRIVER* lcm_driver_list[] =
 	&otm9605A_hongtao_HT498127A_V0_CPT_dsi_qhd_lcm_drv,
 #endif
 
-#if defined(OTM9605A_RIXIN_NST500QH2543ANJ_V1_LG_DSI_2_VDO_QHD)
-	&otm9605a_rixin_NST500QH2543ANJ_V1_LG_dsi_2_vdo_qhd_lcm_drv,
-#endif
+//#if defined(OTM90-otm9605a_dsi_qhd605A_RIXIN_NST500QH2543ANJ_V1_LG_DSI_2_VDO_QHD)
+//	&otm9605a_rixin_NST500QH2543ANJ_V1_LG_dsi_2_vdo_qhd_lcm_drv,
+//#endif
 
 #if defined(OTM9605A_YKL_LP050FPTP179A_CTC_DSI_2_VDO_QHD)
 	&otm9605a_ykl_LP050FPTP179A_CTC_dsi_2_vdo_qhd_lcm_drv,
