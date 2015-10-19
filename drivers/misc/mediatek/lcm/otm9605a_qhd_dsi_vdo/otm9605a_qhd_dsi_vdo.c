@@ -31,7 +31,7 @@
 #define PHYSICAL_HIGHT         (121)
 
 
-#define LCM_ID       (0x40)
+//#define LCM_ID       (0x40)
 #define LCM_DSI_CMD_MODE		0
 
 #define REGFLAG_DELAY 0xAB
@@ -54,13 +54,13 @@ DSV power +5V,-5v
 #define GPIO_DSV_AVEE_EN_M_PWM GPIO_MODE_05
 #endif
 
-#ifndef GPIO_LCM_PWR
+//#ifndef GPIO_LCM_PWR
 #define GPIO_LCM_PWR         (GPIO115 | 0x80000000)
-#endif
+//#endif
 
-#ifndef GPIO_LCM_PWR_M_GPIO
+//#ifndef GPIO_LCM_PWR_M_GPIO
 #define GPIO_LCM_PWR_M_GPIO   GPIO_MODE_00
-#endif
+//#endif
 
 #ifndef GPIO_DSV_EN
 #define GPIO_DSV_EN         (GPIO42 | 0x80000000)
@@ -70,13 +70,13 @@ DSV power +5V,-5v
 #define GPIO_DSV_EN_M_GPIO   GPIO_MODE_00
 #endif
 
-#ifndef GPIO_LCM_RST
+//#ifndef GPIO_LCM_RST
 #define GPIO_LCM_RST         (GPIO112 | 0x80000000)
-#endif
+//#endif
 
-#ifndef GPIO_LCM_RST_M_GPIO
+//#ifndef GPIO_LCM_RST_M_GPIO
 #define GPIO_LCM_RST_M_GPIO   GPIO_MODE_00
-#endif
+//#endif
 
 // ---------------------------------------------------------------------------
 //  Local Variables
@@ -663,7 +663,7 @@ static void lcm_update(unsigned int x, unsigned int y,
 
 static unsigned int lcm_compare_id(void)
 {
-#if 0
+//#if 0
 	unsigned int id=0;
 	unsigned char buffer[2];
 	unsigned int array[16];  
@@ -682,10 +682,10 @@ static unsigned int lcm_compare_id(void)
 	read_reg_v2(0xDC, buffer, 2);
 	id = buffer[0]; 
 	LCM_PRINT("%s, id = 0x%08x\n", __func__, id);
-	return (LCM_ID == id)?1:0;
-#else
+//	return (LCM_ID == id)?1:0;
+//#else
 	return 1;
-#endif	
+//#endif	
 }
 // ---------------------------------------------------------------------------
 //  Get LCM Driver Hooks
