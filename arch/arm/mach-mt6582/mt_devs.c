@@ -1359,12 +1359,6 @@ struct platform_device batch_sensor = {
 	.id            = -1,
 };
 
-#if defined(CONFIG_MTK_HALL_SUPPORT)
-struct platform_device sensor_hall = {
-	.name	       = "hall",
-	.id            = -1,
-};
-#endif
 
 /*=======================================================================*/
 /* DISP DEV                                                              */
@@ -1993,13 +1987,6 @@ retval = platform_device_register(&mtk_m4u_dev);
 	if (retval != 0)
 		return retval;
 #endif
-
-#if defined(CONFIG_MTK_HALL_SUPPORT)
-	retval = platform_device_register(&sensor_hall);
-    printk("[%s]: sensor_hall device, retval=%d \n!", __func__, retval);
-	if (retval != 0)
-		return retval;
-#endif	
 #endif
 
 #if defined(CONFIG_MTK_USBFSH)

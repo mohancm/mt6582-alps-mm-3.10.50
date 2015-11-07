@@ -508,21 +508,12 @@ static void hw_bc11_dump_register(void)
 	bq24158_config_interface_liao(0x00,0xC0);	//kick chip watch dog
 	bq24158_config_interface_liao(0x01,0xb8);	//TE=1, CE=0, HZ_MODE=0, OPA_MODE=0
 	bq24158_config_interface_liao(0x05,0x03);
-
-#ifdef CONFIG_PROJECT_S4710
-      	bq24158_config_interface_liao(0x04,0x20); //850mA
-#else
-	
-	#ifdef CONFIG_PROJECT_S4700_MMX_IN
-	bq24158_config_interface_liao(0x04,0x19);
-#else	
-   bq24158_config_interface_liao(0x04,0x1A);  //146mA
+    
+	bq24158_config_interface_liao(0x04,0x1A); //146mA
 	if ( !charging_init_flag ) {   
 		bq24158_config_interface_liao(0x04,0x1A); //146mA
 		charging_init_flag = KAL_TRUE;
-	}
-#endif
-#endif
+	}        
  	return status;
  }
 

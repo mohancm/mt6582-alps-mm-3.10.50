@@ -86,22 +86,22 @@ static int is_targeted(struct usb_device *dev)
     ***** HID
     */
 
-    /*Mouse*/
+    /*Lenovo Mouse*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x17EF &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x6019))
             return 1;
 
-    /*Basic Optical Mouse*/
+    /*Microsoft Basic Optical Mouse*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x045E &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0084))
             return 1;
 
-    /* Mouse */
+    /*Microsoft M90, M100*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x046D &&
         le16_to_cpu(dev->descriptor.idProduct) == 0xC05A))
             return 1;
 
-    /*USB Keyboard Hub*/
+    /*ORTEK - USB Keyboard Hub*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x9862))
             return 1;
@@ -110,32 +110,32 @@ static int is_targeted(struct usb_device *dev)
     /*
     ***** Mass Storage 
     */
-    /*USB Mass Storage*/
+    /*Kingston Mass Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x1643))
             return 1;
     
-    /*USB G2 Storage*/
+    /*Kingston Data Traveler 101 G2 Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x1665))
             return 1;
 
-    /*USB reader Storage*/
+    /*Sandisk Cruzer Fit Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x5571))
             return 1;
 
-    /*USB Storage*/
+    /*Patroid Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x13FE &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x3100))
             return 1;
 
-    /*USB Storage*/
+    /*Feiya Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x090C &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x1000))
             return 1;
 
-    /*USB Storage*/
+    /*ASUS Storage*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0D7D &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0100))
             return 1;
@@ -145,17 +145,17 @@ static int is_targeted(struct usb_device *dev)
         le16_to_cpu(dev->descriptor.idProduct) == 0x0225))
             return 1;
 
-    /*Storage, MaxPower = 500mA */
+    /*MTK Phone Storage - MaxPower = 500mA */
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0bb4 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0001))
             return 1;
 
-    /*USBIF lab Storage */
+    /*Allion Storage */
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x08EC &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0008))
             return 1;
 
-    /*USBIF lab Storage */
+    /*Allion Storage */
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x5406))
             return 1;            
@@ -163,27 +163,27 @@ static int is_targeted(struct usb_device *dev)
     /*
     ***** HUB 
     */    
-    /*Full Speed Hub*/
+    /*Full Speed Hub 1*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x03EB &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0902))
             return 1;
 
-    /*Full Speed Hub*/
+    /*Full Speed Hub 2*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x058F &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x9254))
             return 1;
 
-    /*High Speed Hub*/
+    /*High Speed Hub - NEC*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0409 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0059))
             return 1;
 
-    /*High Speed Hub*/
+    /*High Speed Hub - Belkin F5U233*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x050d &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x0233))
             return 1;
 
-    /*High Speed Hub - Bus powered */
+    /*High Speed Hub - Targus PAUK10U*/
     if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
         le16_to_cpu(dev->descriptor.idProduct) == 0x9837))
             return 1;

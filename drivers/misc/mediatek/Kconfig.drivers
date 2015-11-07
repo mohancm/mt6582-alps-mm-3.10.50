@@ -1103,10 +1103,6 @@ config MTK_AKM8963
 config MTK_AKM8963_NEW
 	bool "AKM8963 for MediaTek package"
 	default n
-	
-config MTK_ST480
-	bool "ST480 for MediaTek package"
-	default n
 
 config MTK_HSCDTD006
 	bool "HSCDTD006 for MediaTek package"
@@ -1147,10 +1143,7 @@ config MTK_S2200
 config MTK_YAS532
         bool "YAS532 for Mediatek package"
         default n
-        
-config MTK_IST8303
-        bool "IST8303 for Mediatek package"
-        default n
+
 # Barometer sensor
 config MTK_BMP180_NEW
 	bool "BMP180 for MediaTek package"
@@ -1762,10 +1755,6 @@ config MTK_LENS_GAF008AF_SUPPORT
 
 config MTK_CAM_CAL_GT24C32A_SUPPORT
        bool "GT24C32A EEPROM Driver"
-       default n
-       
-config MTK_CAM_CAL_A5142OTP_SUPPORT
-       bool "A5142OTP EEPROM Driver"
        default n
 
 config MTK_CAM_CAL_BRCC064GWZ_3_SUPPORT

@@ -22,11 +22,3 @@ endif
 ifeq ($(CONFIG_MTK_YAS532),y)
 obj-y   +=  yamaha532/
 endif
-
-ifeq ($(CONFIG_MTK_IST8303),y)
-obj-y   +=  ist8303-new/
-endif
-
-ifeq ($(CONFIG_MTK_ST480),y)
-obj-y   +=  st480/
-endif

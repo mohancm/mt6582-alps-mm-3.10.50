@@ -425,24 +425,12 @@ config TOUCHSCREEN_MTK_GT9XX
 	bool "GT9XX for Mediatek package"
 	depends on TOUCHSCREEN_MTK
 
-config TOUCHSCREEN_MTK_synaptics_3508
-	bool "synaptics_3508 for Mediatek package"
-	depends on TOUCHSCREEN_MTK
-
-config TOUCHSCREEN_MTK_S320X
-	bool "S320X for Mediatek package"
-	depends on TOUCHSCREEN_MTK
-
 config TOUCHSCREEN_MTK_GT9XX_HOTKNOT_SCP
 	bool "GT9XX with SCP for Mediatek package"
 	depends on TOUCHSCREEN_MTK
 
 config TOUCHSCREEN_MTK_GT9XX_HOTKNOT
 	bool "GT9XX HOTKNOT for Mediatek package"
-	depends on TOUCHSCREEN_MTK
-
-config TOUCHSCREEN_MTK_GT9XX_HOTKNOT_S5400
-	bool "GT9XX HOTKNOTS S5400 for Mediatek package"
 	depends on TOUCHSCREEN_MTK
 
 config TOUCHSCREEN_MTK_MAX1187X
@@ -467,24 +455,10 @@ config TOUCHSCREEN_MTK_GT9XX_2
 	depends on TOUCHSCREEN_MTK
         
 # Touch panel
-config MTK_synaptics_3508
-        bool "synaptics_3508 for Mediatek package"
-        default n
-config MTK_S320X
-        bool "S320X for Mediatek package"
-        default n
 config MTK_GT9XX
         bool "GT9XX for Mediatek package"
         default n
-
-config MTK_GT9XX_S5222
-        bool "GT9XX_S5222 for Mediatek package"
-        default n
-
-config MTK_EKTF2K_S5222
-        bool "EKTF2K_S5222 for Mediatek package"
-        default n
-      
+        
 config MTK_MMS244
         bool "MMS244 for Mediatek package"
         default n 
@@ -497,42 +471,16 @@ config MTK_FT5406
         bool "FT5406 for Mediatek package"
         default n
 
-# guomingyi20141115 add start.
-config MTK_FT5446I
-        bool "FT5446I for Mediatek package"
-        default n
-
-config MTK_GT9XX_GT9157
-        bool "GT9XX_GT9157 for Mediatek package"
-        default n
-# guomingyi20141115 add end.
-
-config MTK_FT6X06
-        bool "FT6X06 for Mediatek package"
-        default n
-
-config MTK_FT6X06_S5400
-        bool "FT6X06 S5400 for Mediatek package"
-        default n
-
-config MTK_EKTF2K
-        bool "MTK_EKTF2K for Mediatek package"
-        default n
-        
-config MTK_GOODIX9XX
-        bool "MTK_GOODIX9XX for Mediatek package"
-        default n
-
-config MTK_TGESTURE
-        bool "TGESTURE for Mediatek package"
-        default n
-
 config MTK_FT5406_82
         bool "FT5406_82 for Mediatek package"
         default n
 
 config MTK_FT5206
         bool "FT5206 for Mediatek package"
+        default n
+
+config MTK_FT6306
+        bool "FT6306 for Mediatek package"
         default n
 
 config MTK_MMS134

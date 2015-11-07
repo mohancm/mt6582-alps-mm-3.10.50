@@ -11,18 +11,6 @@ obj-y   +=  tpd_init.o
 obj-y   +=  tpd_misc.o
 obj-y   +=  tpd_setting.o
 
-# Use project touchscreen first.
-ifeq ($(wildcard $(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/touchscreen),)
-
-
-ifeq ($(CONFIG_TOUCHSCREEN_MTK_synaptics),y)
-obj-y	+=  synaptics/
-endif
-
-ifeq ($(CONFIG_TOUCHSCREEN_MTK_S320X),y)
-obj-y	+=  S320X/
-endif
-
 ifeq ($(CONFIG_TOUCHSCREEN_MTK_MAX1187X),y)
 obj-y	+=  max1187x/
 endif
@@ -37,10 +25,6 @@ endif
 
 ifeq ($(CONFIG_TOUCHSCREEN_MTK_GT9XX_HOTKNOT),y)
 obj-y	+=  GT9XX_hotknot/
-endif
-
-ifeq ($(CONFIG_TOUCHSCREEN_MTK_GT9XX_HOTKNOT_S5400),y)
-obj-y	+=  gt9xx_hotknot_s5400/
 endif
 
 ifeq ($(CONFIG_TOUCHSCREEN_MTK_GT818B_FPGA),y)
@@ -116,6 +100,9 @@ endif
 ifeq ($(CONFIG_MTK_FT5206),y)
 obj-y	+=  ft5206/
 endif
+ifeq ($(CONFIG_MTK_FT6306),y)
+obj-y	+=  ft6306/
+endif
 
 ifeq ($(CONFIG_TOUCHSCREEN_MTK_GT9XX_2),y)
 obj-y	+=  GT9XX_2/
@@ -124,43 +111,3 @@ endif
 ifeq ($(CONFIG_MTK_MIT200),y)
 obj-y	+=  melfas_mit200/
 endif
-
-ifeq ($(CONFIG_MTK_GOODIX9XX),y) 
-obj-y	+=  Goodix9xx/
-endif
-
-ifeq ($(CONFIG_MTK_EKTF2K),y) 
-obj-y	+=  ektf2k/
-endif
-
-#guomingyi 20141105 add start.
-ifeq ($(CONFIG_MTK_FT5446I),y)
-obj-y	+=  ft5446i/
-endif
-
-ifeq ($(CONFIG_MTK_GT9XX_GT9157),y)
-obj-y	+=  gt9xx_gt9157/
-#guomingyi 20141105 add end.
-endif
-
-ifeq ($(CONFIG_MTK_FT6X06),y)
-obj-y	+=  ft6x06/
-endif
-
-ifeq ($(CONFIG_MTK_FT6X06_S5400),y)
-obj-y	+=  ft6x06_s5400/
-endif
-endif
-
-ifeq ($(CONFIG_MTK_TGESTURE),y)
-obj-y	+=  tgesture/
-endif
-
-ifeq ($(CONFIG_MTK_GT9XX_S5222),y)
-obj-y	+=  GT9XX_S5222/
-endif
-
-ifeq ($(CONFIG_MTK_EKTF2K_S5222),y)
-obj-y	+=  ektf2k_s5222/
-endif
-

@@ -7,12 +7,7 @@ obj-y				+= kd_flashlightlist.o
 obj-y				+= main_strobe2.o
 obj-y				+= strobe_part_id.o
 obj-y				+= sub_strobe2.o
-#
-# Added by zhangxian
-#
-ifeq ($(wildcard $(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/flashlight/constant_flashlight/sub_strobe.c),)
- obj-y				+= sub_strobe.o
-endif
+obj-y				+= sub_strobe.o
 
 
 

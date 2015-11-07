@@ -686,10 +686,6 @@ typedef struct
     ////switch mode
     void* (*switch_mode)(int mode);
 	void (*set_cmd)(void* handle,int* mode,unsigned int cmd_num);
-#ifdef EA8061V_DSI_VIDEO_AMOLED
-    void* (*goto_suspend)(void);
-    void* (*change_backligth_to_dim_mode)(void);
-#endif/*EA8061V_DSI_VIDEO_AMOLED*/
 } LCM_DRIVER;
 
 

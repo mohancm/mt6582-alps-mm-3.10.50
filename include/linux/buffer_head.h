@@ -139,9 +139,6 @@ BUFFER_FNS(Prio, prio)
 	})
 #define page_has_buffers(page)	PagePrivate(page)
 
-void buffer_check_dirty_writeback(struct page *page,
-				     bool *dirty, bool *writeback);
-
 /*
  * Declarations
  */

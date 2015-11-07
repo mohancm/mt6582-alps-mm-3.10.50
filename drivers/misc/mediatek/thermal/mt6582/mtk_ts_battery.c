@@ -408,7 +408,7 @@ static int tsbat_sysrst_set_cur_state(struct thermal_cooling_device *cdev,
 		printk("*****************************************");
 		printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
-		//BUG();
+		BUG();
 		//arch_reset(0,NULL);
 	}
 	return 0;

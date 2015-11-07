@@ -68,7 +68,7 @@ void mt_usb_set_vbus(struct musb *musb, int is_on)
         bq24158_set_opa_mode(1);
         bq24158_set_otg_pl(1);
         bq24158_set_otg_en(1);
-    #elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(CONFIG_MTK_BQ24296_SUPPORT) || defined(CONFIG_MTK_NCP1854_SUPPORT)
+    #elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(MTK_BQ24296_SUPPORT) || defined(MTK_NCP1854_SUPPORT)
         tbl_charger_otg_vbus((work_busy(&musb->id_pin_work.work)<< 8)| 1);
     #else
 		mt_set_gpio_mode(GPIO_OTG_DRVVBUS_PIN,GPIO_OTG_DRVVBUS_PIN_M_GPIO);
@@ -82,7 +82,7 @@ void mt_usb_set_vbus(struct musb *musb, int is_on)
     #elif defined(CONFIG_MTK_BQ24158_SUPPORT)		
         bq24158_config_interface_liao(0x01,0x30);
 		bq24158_config_interface_liao(0x02,0x8e);
-    #elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(CONFIG_MTK_BQ24296_SUPPORT) || defined(CONFIG_MTK_NCP1854_SUPPORT)
+    #elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(MTK_BQ24296_SUPPORT) || defined(MTK_NCP1854_SUPPORT)
         tbl_charger_otg_vbus((work_busy(&musb->id_pin_work.work)<< 8)| 0);
     #else
 		mt_set_gpio_mode(GPIO_OTG_DRVVBUS_PIN,GPIO_OTG_DRVVBUS_PIN_M_GPIO);

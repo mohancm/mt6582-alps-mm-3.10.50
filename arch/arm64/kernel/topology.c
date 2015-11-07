@@ -648,8 +648,7 @@ int arch_get_cluster_id(unsigned int cpu)
 		cls = cls->next;
 	}
 	BUG_ON(!cls);
-	WARN_ONCE(cls->cluster_id != arm_cputopo->socket_id, "[CPUTOPO][%s] cpu(%d): cluster_id(%d) != socket_id(%d) !\n",
-			  __func__, cpu, cls->cluster_id, arm_cputopo->socket_id);
+	BUG_ON(cls->cluster_id != arm_cputopo->socket_id);
 
 	return cls->cluster_id;
 }

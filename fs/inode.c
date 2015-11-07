@@ -165,8 +165,8 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping->host = inode;
 	mapping->flags = 0;
 
-        //mapping_set_gfp_mask(mapping, (GFP_HIGHUSER_MOVABLE & ~__GFP_HIGHMEM) | __GFP_SLOWHIGHMEM);
-        mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
+        mapping_set_gfp_mask(mapping, (GFP_HIGHUSER_MOVABLE & ~__GFP_HIGHMEM) | __GFP_SLOWHIGHMEM);
+        //mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 
 	mapping->private_data = NULL;
 	mapping->backing_dev_info = &default_backing_dev_info;

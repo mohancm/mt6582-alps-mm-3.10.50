@@ -13,10 +13,6 @@ ifeq ($(CONFIG_MTK_CM36283),y)
 obj-y	+=  cm36283/
 endif
 
-ifeq ($(CONFIG_MTK_AP3220),y)
-obj-y	+=  ap3220/
-endif
-
 ifeq ($(CONFIG_MTK_APM_16D),y)
 obj-y	+=  apm_16d/
 endif
@@ -45,22 +41,4 @@ endif
 
 ifeq ($(CONFIG_MTK_APDS9930_NEW),y)
 obj-y	+=  APDS9930-new/
-endif
-#guomingyi-2014-1214-add-start.
-ifeq ($(CONFIG_MTK_LTR553),y)
-obj-y   +=  ltr553/
-endif
-#guomingyi-2014-1214-add-end.
-
-
-ifeq ($(CONFIG_MTK_LTR501),y)
-obj-y	+=  ltr501/
-endif
-
-ifeq ($(CONFIG_MTK_LTR553_S5400),y)
-obj-y   +=  ltr553_s5400/
-endif
-
-ifeq ($(CONFIG_MTK_STK3308),y)
-obj-y   +=  stk3308/
 endif

@@ -28,9 +28,6 @@
 #include <linux/earlysuspend.h>
 /* #include "tpd_custom.h" */
 
-#ifdef CONFIG_PROJECT_S4710
-#define TPD_DC_SYS_RESUME "[DC_SYS_RESUME]"
-#endif
 /* debug macros */
 /* //#define TPD_DEBUG */
 #define TPD_DEBUG_CODE
@@ -104,9 +101,6 @@ struct tpd_driver_t {
 	void (*resume) (struct early_suspend *h);
 	int tpd_have_button;
 	struct tpd_attrs attrs;
-	int (*tpd_get_fw_version)(void);
-    void (*tpd_get_fw_vendor_name)(char * fw_vendor_name);	
-	
 };
 
 struct tpd_filter_t

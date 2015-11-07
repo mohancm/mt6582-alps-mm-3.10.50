@@ -829,14 +829,8 @@ kal_bool charging_type_detection_done(void)
 		/********* Step A1 ***************/
 		if(1 == hw_bc11_stepA1())
 		{
-		
-	#if defined(CONFIG_TINNO_QUICK_CHARGING)
-		*(CHARGER_TYPE*)(data) = TINNO_1_5A_CHARGER;
-			battery_xlog_printk(BAT_LOG_CRTI, "step A1 : tinno special CHARGER!\r\n");
-	#else
-		*(CHARGER_TYPE*)(data) = APPLE_2_1A_CHARGER;
+			*(CHARGER_TYPE*)(data) = APPLE_2_1A_CHARGER;
 			battery_xlog_printk(BAT_LOG_CRTI, "step A1 : Apple 2.1A CHARGER!\r\n");
-	#endif
 		}	 
 		else
 		{

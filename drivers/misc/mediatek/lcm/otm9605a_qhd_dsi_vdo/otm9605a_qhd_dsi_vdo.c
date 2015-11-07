@@ -27,12 +27,12 @@
 #define FRAME_WIDTH  			(540)
 #define FRAME_HEIGHT 			(960)
 // physical dimension
-#define PHYSICAL_WIDTH        (68)
-#define PHYSICAL_HIGHT         (121)
+//#define PHYSICAL_WIDTH        (68)
+//#define PHYSICAL_HIGHT         (121)
 
 
-//#define LCM_ID       (0x40)
-#define LCM_DSI_CMD_MODE		0
+#define LCM_ID       (0x40)
+#define LCM_DSI_CMD_MODE		1
 
 #define REGFLAG_DELAY 0xAB
 #define REGFLAG_END_OF_TABLE 0xAA // END OF REGISTERS MARKER
@@ -54,13 +54,13 @@ DSV power +5V,-5v
 #define GPIO_DSV_AVEE_EN_M_PWM GPIO_MODE_05
 #endif
 
-//#ifndef GPIO_LCM_PWR
+#ifndef GPIO_LCM_PWR
 #define GPIO_LCM_PWR         (GPIO115 | 0x80000000)
-//#endif
+#endif
 
-//#ifndef GPIO_LCM_PWR_M_GPIO
+#ifndef GPIO_LCM_PWR_M_GPIO
 #define GPIO_LCM_PWR_M_GPIO   GPIO_MODE_00
-//#endif
+#endif
 
 #ifndef GPIO_DSV_EN
 #define GPIO_DSV_EN         (GPIO42 | 0x80000000)
@@ -70,13 +70,13 @@ DSV power +5V,-5v
 #define GPIO_DSV_EN_M_GPIO   GPIO_MODE_00
 #endif
 
-//#ifndef GPIO_LCM_RST
+#ifndef GPIO_LCM_RST
 #define GPIO_LCM_RST         (GPIO112 | 0x80000000)
-//#endif
+#endif
 
-//#ifndef GPIO_LCM_RST_M_GPIO
+#ifndef GPIO_LCM_RST_M_GPIO
 #define GPIO_LCM_RST_M_GPIO   GPIO_MODE_00
-//#endif
+#endif
 
 // ---------------------------------------------------------------------------
 //  Local Variables
@@ -313,8 +313,8 @@ static void lcm_get_params(LCM_PARAMS * params)
 	params->width  = FRAME_WIDTH;
 	params->height = FRAME_HEIGHT;
 
-   params->physical_width=PHYSICAL_WIDTH;
-   params->physical_height=PHYSICAL_HIGHT;
+//   params->physical_width=PHYSICAL_WIDTH;
+//   params->physical_height=PHYSICAL_HIGHT;
 
 	// enable tearing-free
 	params->dbi.te_mode 				= LCM_DBI_TE_MODE_DISABLED;
@@ -663,7 +663,7 @@ static void lcm_update(unsigned int x, unsigned int y,
 
 static unsigned int lcm_compare_id(void)
 {
-//#if 0
+#if 0
 	unsigned int id=0;
 	unsigned char buffer[2];
 	unsigned int array[16];  
@@ -682,15 +682,15 @@ static unsigned int lcm_compare_id(void)
 	read_reg_v2(0xDC, buffer, 2);
 	id = buffer[0]; 
 	LCM_PRINT("%s, id = 0x%08x\n", __func__, id);
-//	return (LCM_ID == id)?1:0;
-//#else
+	return (LCM_ID == id)?1:0;
+#else
 	return 1;
-//#endif	
+#endif	
 }
 // ---------------------------------------------------------------------------
 //  Get LCM Driver Hooks
 // ---------------------------------------------------------------------------
-LCM_DRIVER otm9605a_qhd_dsi_vdo_lcm_drv= {
+LCM_DRIVER otm9605a_qhd_dsi_vdo_drv = {
 	.name = "otm9605a_qhd_dsi_vdo",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params = lcm_get_params,

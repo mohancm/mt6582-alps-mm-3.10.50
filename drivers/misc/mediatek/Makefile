@@ -164,7 +164,6 @@ obj-$(CONFIG_ZRAM)	+= mlog/
 obj-$(CONFIG_MTK_CAM_CAL_GT24C32A_SUPPORT)	+= cam_cal/GT24c32a_eeprom/
 obj-$(CONFIG_MTK_CAM_CAL_BRCC064GWZ_3_SUPPORT) += cam_cal/BRCC064GWZ_3_eeprom/
 obj-$(CONFIG_MTK_CAM_CAL_BRCB032GWZ_3_SUPPORT) += cam_cal/BRCB032GWZ_3_eeprom/
-obj-$(CONFIG_MTK_CAM_CAL_A5142OTP_SUPPORT) += cam_cal/a5142otp/
 obj-y	+= lens/
 obj-y	+= imgsensor/src/
 
@@ -188,10 +187,6 @@ obj-y	+= pmic_wrap/
 ifeq ($(CONFIG_MTK_HDMI_SUPPORT),y)
 obj-y	+= hdmi/
 obj-y	+= ext_disp/
-endif
-
-ifeq ($(CONFIG_MTK_HALL_SUPPORT),y)
-obj-y	+= hall/
 endif
 
 obj-$(CONFIG_MTK_HIBERNATION) += hibcore/
@@ -258,8 +253,9 @@ obj-y	+= selinux_warning/
 # MTK PASR SW flow
 obj-$(CONFIG_MTKPASR)	+= mtkpasr/
 
-#obj-$(CONFIG_MTK_TC1_FEATURE)	+= tc1_interface/
-
+ifeq ($(CONFIG_MTK_TC1_FEATURE),y)
+obj-y	+= tc1_interface/
+endif
 obj-$(CONFIG_MTK_SWITCH_TX_POWER) += sw_tx_power/
 
 #charge pump

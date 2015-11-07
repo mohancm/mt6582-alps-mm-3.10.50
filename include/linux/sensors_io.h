@@ -79,7 +79,7 @@ typedef struct {
 #define MSENSOR_IOCTL_SET_CALIDATA		_IOW(MSENSOR, 0x0a, int)
 #define MSENSOR_IOCTL_SENSOR_ENABLE         _IOW(MSENSOR, 0x51, int)
 #define MSENSOR_IOCTL_READ_FACTORY_SENSORDATA  _IOW(MSENSOR, 0x52, int)
-#define CKT_MSENSOR_IOCTL_READ_FACTORY_SENSORDATA  _IOW(MSENSOR, 0x53, int)
+
 
 /* IOCTLs for AKM library */
 #define ECS_IOCTL_WRITE                 _IOW(MSENSOR, 0x0b, char*)

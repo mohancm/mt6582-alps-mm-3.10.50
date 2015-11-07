@@ -24,12 +24,7 @@
 #endif
 
 #define KPD_NAME	"mtk-kpd"
-
-#ifdef CONFIG_ONEKEY_GOTO_CAMERA
-//#define MTK_KP_WAKESOURCE
-#else
 #define MTK_KP_WAKESOURCE	/* this is for auto set wake up source */
-#endif
 
 #ifdef CONFIG_OF
 void __iomem *kp_base;

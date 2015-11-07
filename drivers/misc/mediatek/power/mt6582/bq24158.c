@@ -50,8 +50,6 @@ static struct i2c_driver bq24158_driver = {
     .id_table    = bq24158_i2c_id,
 };
 
-//guomingyi20141118add.
-#define LOG_TAG "[bq24158]"
 /**********************************************************
   *
   *   [Global Variable] 
@@ -90,14 +88,6 @@ int bq24158_read_byte(kal_uint8 cmd, kal_uint8 *returnData)
     readData = cmd_buf[0];
     *returnData = readData;
 
-#ifdef LOG_TAG
-	if(cmd == 0x04 ||cmd == 0x06) 
-	{
-		printk(LOG_TAG "r:[0x%02x] : 0x%02x\n", cmd, readData);
-	}
-#endif
-
-
     // new_client->addr = new_client->addr & I2C_MASK_FLAG;
     new_client->ext_flag=0;
     
@@ -125,15 +115,7 @@ int bq24158_write_byte(kal_uint8 cmd, kal_uint8 writeData)
         mutex_unlock(&bq24158_i2c_access);
         return 0;
     }
-
-#ifdef LOG_TAG
-	if(cmd == 0x04 ||cmd == 0x06) 
-	{
-		printk(LOG_TAG "w:[0x%02x] : 0x%02x\n", cmd, writeData);
-	}
-#endif
-
-	
+    
     new_client->ext_flag=0;
     mutex_unlock(&bq24158_i2c_access);
     return 1;

@@ -17,8 +17,8 @@
     || defined(CONFIG_MTK_BQ24158_SUPPORT) \
     || defined(CONFIG_MTK_NCP1851_SUPPORT) \
     || defined(CONFIG_MTK_BQ24196_SUPPORT)\
-    || defined(CONFIG_MTK_NCP1854_SUPPORT) \
-    || defined(CONFIG_MTK_BQ24296_SUPPORT)
+    || defined(MTK_NCP1854_SUPPORT) \
+    || defined(MTK_BQ24296_SUPPORT)
 #define SWITCH_CHARGER 1
 #endif
 
@@ -82,7 +82,7 @@ extern void bq24158_set_opa_mode(kal_uint32 val);
 extern void bq24158_set_otg_pl(kal_uint32 val);
 extern void bq24158_set_otg_en(kal_uint32 val);
 extern kal_uint32 bq24158_config_interface_liao (kal_uint8 RegNum, kal_uint8 val);
-#elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(CONFIG_MTK_BQ24296_SUPPORT) || defined(CONFIG_MTK_NCP1854_SUPPORT)
+#elif defined(CONFIG_MTK_NCP1851_SUPPORT) || defined(CONFIG_MTK_BQ24196_SUPPORT) || defined(MTK_BQ24296_SUPPORT) || defined(MTK_NCP1854_SUPPORT)
 extern void tbl_charger_otg_vbus(kal_uint32 mode);
 #endif
 

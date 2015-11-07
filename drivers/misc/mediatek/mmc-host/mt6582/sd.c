@@ -1022,54 +1022,27 @@ static u32 msdc_ldo_power(u32 on, int powerId, int powerVolt, u32 *status){
 }
 #endif
 #else
-#if defined(CONFIG_T_CARD_PWR_GPIO) // by zx++
-#define T_CARD_PWR_GPIO 118
-#define T_CARD_GPIO_MD0 0
-#define T_CARD_GPIO_OUTPUT 1
-#define T_CARD_GPIO_OUTPUT_ZERO 0
-#define T_CARD_GPIO_OUTPUT_ONE 1
-#endif
+
 static u32 msdc_ldo_power(u32 on, MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, u32 *status)
 {
     if (on) { // want to power on
         if (*status == 0) {  // can power on 
-            printk(KERN_WARNING "msdc LDO<%d> power on<%d>\n", powerId, powerVolt);
-            #if defined(CONFIG_T_CARD_PWR_GPIO) // by zx++
-				printk(KERN_WARNING "T_CARD_PWR_GPIO = %d\n",T_CARD_PWR_GPIO);
-                mt_set_gpio_out(T_CARD_PWR_GPIO, T_CARD_GPIO_OUTPUT_ONE);
-                msleep(20);
-                //*status = 1;             
-				*status = powerVolt;
-            #else
-                hwPowerOn(powerId, powerVolt, "msdc"); 
-                *status = powerVolt;
-            #endif //zx--
+            printk(KERN_WARNING "msdc LDO<%d> power on<%d>\n", powerId, powerVolt);   
+            hwPowerOn(powerId, powerVolt, "msdc");
+            *status = powerVolt;             
         } else if (*status == powerVolt) {
             printk(KERN_ERR "msdc LDO<%d><%d> power on again!\n", powerId, powerVolt);  
         } else { // for sd3.0 later
             printk(KERN_WARNING "msdc LDO<%d> change<%d> to <%d>\n", powerId, *status, powerVolt);
-            #if defined(CONFIG_T_CARD_PWR_GPIO) // by zx++
-                mt_set_gpio_out(T_CARD_PWR_GPIO, T_CARD_GPIO_OUTPUT_ONE);
-                msleep(20);
-                //*status = 1;
-				*status = powerVolt;
-            #else
-                hwPowerDown(powerId, "msdc");
-                hwPowerOn(powerId, powerVolt, "msdc");
-                *status = powerVolt;
-            #endif  //zx--
+            hwPowerDown(powerId, "msdc");
+            hwPowerOn(powerId, powerVolt, "msdc");
+            *status = powerVolt;  
         }
     } else {  // want to power off
         if (*status != 0) {  // has been powerred on
             printk(KERN_WARNING "msdc LDO<%d> power off\n", powerId);   
-            #if defined(CONFIG_T_CARD_PWR_GPIO) // by zx++
-                mt_set_gpio_out(T_CARD_PWR_GPIO, T_CARD_GPIO_OUTPUT_ZERO);
-                msleep(20);
-                *status = 0;
-            #else
-                hwPowerDown(powerId, "msdc");
-				*status = 0;
-            #endif //zx--
+            hwPowerDown(powerId, "msdc");
+            *status = 0;
         } else {
             printk(KERN_ERR "LDO<%d> not power on\n", powerId);  
         }              
