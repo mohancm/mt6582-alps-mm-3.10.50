@@ -34,7 +34,7 @@ static u8 tpd_proximity_flag = 0;
 static u8 tpd_proximity_detect = 1;   //0-->close ; 1--> far away
 #endif
 
-#include "tpd_custom_ft5406_82.h"
+#include "tpd_custom_ft5206.h"
 
 #include "cust_gpio_usage.h"
 
