@@ -479,6 +479,14 @@ config MTK_FT5206
         bool "FT5206 for Mediatek package"
         default n
 
+config MTK_FT5316
+        bool "FT5206 for Mediatek package"
+        default n
+
+config MTK_FT5x06
+        bool "FT5206 for Mediatek package"
+        default n
+
 config MTK_FT6306
         bool "FT6306 for Mediatek package"
         default n

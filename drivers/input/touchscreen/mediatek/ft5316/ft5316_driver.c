@@ -9,7 +9,7 @@
 #include <linux/time.h>
 #include <linux/delay.h>
 #include <linux/dma-mapping.h>
-#include "tpd_custom_ft5316.h"
+#include "tpd_custom_ft5306.h"
 
 #include <mach/mt_pm_ldo.h>
 #include <mach/mt_typedefs.h>
@@ -37,9 +37,9 @@ extern unsigned int mt65xx_eint_set_sens(unsigned int eint_num, unsigned int sen
 extern void mt65xx_eint_registration(unsigned int eint_num, unsigned int is_deb_en, unsigned int pol, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
 #endif
  
-static int __devinit tpd_probe(struct i2c_client *client, const struct i2c_device_id *id);
+static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int tpd_detect (struct i2c_client *client, struct i2c_board_info *info);
-static int __devexit tpd_remove(struct i2c_client *client);
+static int tpd_remove(struct i2c_client *client);
 static int touch_event_handler(void *unused);
  
 static int boot_mode = 0;
@@ -251,7 +251,7 @@ struct touch_info {
 //	 .owner = THIS_MODULE,
   },
   .probe = tpd_probe,
-  .remove = __devexit_p(tpd_remove),
+  .remove = tpd_remove,
   .id_table = ft5206_tpd_id,
   .detect = tpd_detect,
 //  .address_data = &addr_data,
@@ -1142,7 +1142,7 @@ static  void tpd_up(int x, int y,int *count) {
 	 wake_up_interruptible(&waiter);
 	 
  }
- static int __devinit tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
  {	 
 	int retval = TPD_OK;
 #ifdef ESD_CHECK	
@@ -1260,7 +1260,7 @@ reset_proc:
    
  }
 
- static int __devexit tpd_remove(struct i2c_client *client)
+ static int tpd_remove(struct i2c_client *client)
  
  {
    

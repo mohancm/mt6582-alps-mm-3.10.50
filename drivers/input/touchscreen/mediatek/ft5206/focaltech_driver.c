@@ -14,7 +14,7 @@
 #include "tpd.h"
 
 #include "tpd_custom_ft5206.h"
-#include "focaltech_ex_fun.h"
+//#include "focaltech_ex_fun.h"
 #include <linux/netdevice.h>
 #ifdef FTS_CTL_IIC
 #include "focaltech_ctl.h"

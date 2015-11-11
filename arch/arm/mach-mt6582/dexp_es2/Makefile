@@ -7,6 +7,9 @@ ifeq ($(CONFIG_MTK_SENSOR_SUPPORT),y)
 ifeq ($(CONFIG_MTK_CM36283),y)
 obj-y	+=  alsps/cm36283/
 endif
+ifeq ($(CONFIG_MTK_AP3216C),y)
+obj-y	+=  alsps/ap3216c/
+endif
 
 ifeq ($(CONFIG_MTK_BMA050_NEW),y)
 obj-y   +=  accelerometer/bma050-new/

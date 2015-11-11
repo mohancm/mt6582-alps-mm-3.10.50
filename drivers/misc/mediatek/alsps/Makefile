@@ -35,6 +35,10 @@ ifeq ($(CONFIG_MTK_APDS9930),y)
 obj-y	+=  APDS9930/
 endif
 
+ifeq ($(CONFIG_MTK_AP3216C),y)
+obj-y	+=  ap3216c/
+endif
+
 ifeq ($(CONFIG_MTK_CM3232_NEW),y)
 obj-y	+=  cm3232-new/
 endif

@@ -1026,6 +1026,10 @@ config MTK_CM3232_NEW
 	bool "CM3232 for MediaTek package"
 	default n
 
+config MTK_AP3216C
+	bool "AP3216C for MediaTek package"
+	default n
+
 config MTK_APDS9930_NEW
 	bool "APDS9930_NEW for MediaTek package"
 	default n
@@ -1747,6 +1751,10 @@ config MTK_LENS_GAF002AF_SUPPORT
 
 config MTK_LENS_GAF008AF_SUPPORT
 	bool "GAF008AF Lens Driver"
+	default n
+
+config MTK_LENS_OV8825AF_SUPPORT
+	bool "OV8825AF Lens Driver"
 	default n
 
 #

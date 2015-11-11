@@ -267,8 +267,7 @@ static void lcm_suspend(void)
 }
 static void lcm_resume(void)
 {
-push_table(lcm_sleep_out_setting, sizeof(lcm_sleep_out_setting) / sizeof(struct LCM_setting_table), 1);
-//    lcm_init();    
+    lcm_init();    
 }
          
 
@@ -349,9 +348,8 @@ static unsigned int lcm_compare_id(void)
 #endif
 
   
-    return 1;
+    return (LCM_ID == id)?1:0;
 }
-
 
 LCM_DRIVER rm68191_qhd_dsi_vdo_lcm_drv = 
 {
