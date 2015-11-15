@@ -76,6 +76,7 @@
 */
 
 #define SPK_WARM_UP_TIME     (50) //unit is ms
+#define SPK_MODE 3
 /*****************************************************************************
 *                         D A T A      T Y P E S
 ******************************************************************************
@@ -132,6 +133,16 @@ void Sound_Speaker_Turnon(int channel)
     PRINTK("Sound_Speaker_Turnon channel = %d\n",channel);
     if(gsk_on)
         return;
+
+    int i;
+    for(i=1;i<SPK_MODE;i++){
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        //udelay(2);
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        //udelay(2);
+    }
     mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT); // output
     mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
     msleep(SPK_WARM_UP_TIME);
@@ -253,3 +264,5 @@ kal_int32 Sound_ExtFunction(const char* name, void* param, int param_size)
 
     return 1;
 }
+
+
