@@ -1,6 +1,6 @@
 /*
- * This file is part of the AP3216C sensor driver for MTK platform.
- * AP3216C is combined proximity, ambient light sensor and IRLED.
+ * This file is part of the ap3xx6 sensor driver for MTK platform.
+ * DI ap3xx6 is combined proximity, ambient light sensor and IRLED.
  *
  * Contact: YC Hou <yc.hou@liteonsemi.com>
  *
@@ -19,10 +19,10 @@
  * 02110-1301 USA
  *
  *
- * Filename: ap3216c_mtk.h
+ * Filename: ap3xx6.h
  *
  * Summary:
- *	AP3216C sensor dirver header file.
+ *	AP3xx6 sensor dirver header file.
  *
  * Modification History:
  * Date     By       Summary
@@ -31,31 +31,34 @@
  */
 
 /*
- * Definitions for ap3216c als/ps sensor chip.
+ * Definitions for AP3xx6 als/ps sensor chip.
  */
-#ifndef __AP3216C_H__
-#define __AP3216C_H__
+#ifndef __AP3xx6_H__
+#define __AP3xx6_H__
 
 #include <linux/ioctl.h>
 
-#define AP3216C_LSC_ENABLE 		0X00
-#define AP3216C_LSC_INT_STATUS	0x01
-#define AP3216C_LSC_ADATA_L 	0X0C
-#define AP3216C_LSC_ADATA_H 	0X0D
-#define AP3216C_LSC_PDATA_L 	0X0E
-#define AP3216C_LSC_PDATA_H 	0X0F
-#define AP3216C_LSC_INT_LOW_THD_LOW   0X2A
-#define AP3216C_LSC_INT_LOW_THD_HIGH  0X2B
-#define AP3216C_LSC_INT_HIGH_THD_LOW  0X2C
-#define AP3216C_LSC_INT_HIGH_THD_HIGH 0X2D
+#define AP3xx6_ENABLE 		                0X00
+#define AP3xx6_INT_STATUS	                0x01
+#define AP3xx6_ADATA_L 	                    0X0C
+#define AP3xx6_ADATA_H 	                    0X0D
+#define AP3xx6_PDATA_L 	                    0X0E
+#define AP3xx6_PDATA_H 	                    0X0F
+#define AP3xx6_ALS_GAIN	                    0X10
+#define AP3xx6_PS_GAIN	                    0X20
+
+#define AP3xx6_INT_LOW_THD_LOW               0X2A
+#define AP3xx6_INT_LOW_THD_HIGH              0X2B
+#define AP3xx6_INT_HIGH_THD_LOW              0X2C
+#define AP3xx6_INT_HIGH_THD_HIGH             0X2D
 
 
 
-#define AP3216C_SUCCESS						0
-#define AP3216C_ERR_I2C						-1
-#define AP3216C_ERR_STATUS					-3
-#define AP3216C_ERR_SETUP_FAILURE			-4
-#define AP3216C_ERR_GETGSENSORDATA			-5
-#define AP3216C_ERR_IDENTIFICATION			-6
+#define AP3xx6_SUCCESS						0
+#define AP3xx6_ERR_I2C						-1
+#define AP3xx6_ERR_STATUS					-3
+#define AP3xx6_ERR_SETUP_FAILURE			-4
+#define AP3xx6_ERR_GETGSENSORDATA			-5
+#define AP3xx6_ERR_IDENTIFICATION			-6
 
 #endif

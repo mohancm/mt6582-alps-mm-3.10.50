@@ -1,4 +1,3 @@
-
 #include "alsps.h"
 #include "aal_control.h"
 struct alsps_context *alsps_context_obj = NULL;
@@ -1021,7 +1020,6 @@ int ps_register_control_path(struct ps_control_path *ctl)
 	   ALSPS_ERR("unable to create alsps attribute file\n");
 	   return -3;
 	}
-
 		
 	kobject_uevent(&alsps_context_obj->mdev.this_device->kobj, KOBJ_ADD);
 	*/
