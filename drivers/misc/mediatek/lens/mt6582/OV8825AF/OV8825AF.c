@@ -15,7 +15,7 @@
 #include "../camera/kd_camera_hw.h"
 
 #define LENS_I2C_BUSNUM 1
-static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("OV8825AF", 0x19)};
+static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("OV8825AF", 0x18)};
 
 
 #define OV8825AF_DRVNAME "OV8825AF"

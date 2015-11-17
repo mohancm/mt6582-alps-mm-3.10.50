@@ -1733,10 +1733,6 @@ config MTK_LENS_MT9P017AF_SUPPORT
 	bool "MT9P017AF Lens Driver"
 	default n
 
-config MTK_LENS_OV8825AF_SUPPORT
-	bool "OV8825AF Lens Driver"
-	default n
-
 config MTK_LENS_SENSORDRIVE_SUPPORT
 	bool "SENSORDRIVE Lens Driver"
 	default n
@@ -1760,6 +1756,10 @@ config MTK_LENS_OV8825AF_SUPPORT
 #
 # Camera EEPROM Calibration
 #
+
+config MTK_CAM_CAL_A5142OTP_SUPPORT
+       bool "A5142OTP EEPROM Driver"
+       default n
 
 config MTK_CAM_CAL_GT24C32A_SUPPORT
        bool "GT24C32A EEPROM Driver"

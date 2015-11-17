@@ -37,6 +37,7 @@ obj-y	+= dct/dct/
 endif
 
 #obj-y	+=  hdmi/
+obj-y   +=  flashlight/
 obj-y	+=  camera/camera/
 obj-y	+=  vibrator/
 obj-y	+=  leds/

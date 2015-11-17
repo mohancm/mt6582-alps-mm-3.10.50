@@ -570,7 +570,7 @@ u32 pinSet[2][8] = {
 	        }
 		}
 	}
-    else if (currSensorName && (0 == strcmp(SENSOR_DRVNAME_A5142_MIPI_RAW, currSensorName)))
+    else if (currSensorName && (0 == strcmp(SENSOR_DRVNAME_OV5647MIPI_RAW, currSensorName)))
     {
         //enable active sensor
         if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
