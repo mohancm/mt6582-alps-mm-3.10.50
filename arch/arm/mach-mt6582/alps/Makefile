@@ -12,6 +12,10 @@ ifeq ($(CONFIG_MTK_KXTJ2_1009),y)
 obj-y   +=  accelerometer/KXTJ2_1009/
 endif
 
+ifeq ($(CONFIG_MTK_BMA222E_NEW),y)
+obj-y   +=  accelerometer/bma222E-new/
+endif
+
 endif
 
 ifneq ($(CONFIG_ARCH_MTK_PROJECT),)
