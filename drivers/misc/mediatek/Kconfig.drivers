@@ -1014,6 +1014,10 @@ config MTK_STK3X1X
 	bool "STK3X1X for MediaTek package"
 	default n
 
+config MTK_AP3216C
+	bool "AP3216C for MediaTek package"
+	default n
+
 config MTK_CM36652_NEW
 	bool "cm36652 for MediaTek package"
 	default n

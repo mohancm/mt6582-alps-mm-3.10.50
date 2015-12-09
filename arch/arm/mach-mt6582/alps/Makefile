@@ -8,6 +8,11 @@ ifeq ($(CONFIG_MTK_STK3X1X),y)
 obj-y	+=  alsps/stk3x1x/
 endif
 
+ifeq ($(CONFIG_MTK_AP3216C),y)
+obj-y	+=  alsps/ap3216c/
+endif
+
+
 ifeq ($(CONFIG_MTK_KXTJ2_1009),y)
 obj-y   +=  accelerometer/KXTJ2_1009/
 endif
