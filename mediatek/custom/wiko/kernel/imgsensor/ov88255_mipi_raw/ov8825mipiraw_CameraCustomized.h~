@@ -3,7 +3,7 @@
 
 /*******************************************************************************************/
 
-  
+
 #ifndef __CAMERA_CUSTOMIZED_H
 #define __CAMERA_CUSTOMIZED_H
 
@@ -19,7 +19,7 @@
 #define MAIN_SENSOR_TO_PHONE_ANGLE        270
 #define SUB_SENSOR_TO_PHONE_ANGLE           0
 
- 
+
 #define CAM_SIZE_QVGA_WIDTH         320
 #define CAM_SIZE_QVGA_HEIGHT        240
 #define CAM_SIZE_VGA_WIDTH            640
@@ -34,8 +34,6 @@
 #define CAM_SIZE_3M_HEIGHT             1536
 #define CAM_SIZE_5M_WIDTH              2592
 #define CAM_SIZE_5M_HEIGHT             1944
-#define CAM_SIZE_8M_WIDTH              3264
-#define CAM_SIZE_8M_HEIGHT             2448
 
 // for main sensor
 #define MAIN_NUM_OF_PREVIEW_RESOLUTION 3

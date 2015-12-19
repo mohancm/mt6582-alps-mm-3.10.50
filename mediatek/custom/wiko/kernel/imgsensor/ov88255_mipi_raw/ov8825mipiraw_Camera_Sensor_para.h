@@ -2,7 +2,7 @@
 
 
 /*******************************************************************************************/
-   
+
 /* SENSOR FULL SIZE */
 #ifndef __CAMERA_SENSOR_PARA_H
 #define __CAMERA_SENSOR_PARA_H

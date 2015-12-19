@@ -18,10 +18,12 @@ SDIO slot index number used by connectivity combo chip:
 1: MSDC1
 2: MSDC2
 */
-#define CONFIG_MTK_COMBO_SDIO_SLOT  (2) /* MSDC0 for temp use */
+#define CONFIG_MTK_WCN_CMB_SDIO_SLOT  (2) /* MSDC3 */
 #else
-#undef CONFIG_MTK_COMBO_SDIO_SLOT
+#undef CONFIG_MTK_WCN_CMB_SDIO_SLOT
 #endif
+/*For MT6582 platform we disable COMBO SDIO SLOT defination*/
+#undef CONFIG_MTK_WCN_CMB_SDIO_SLOT
 
 #if 0 /* FIXME. */
 /*=======================================================================*/

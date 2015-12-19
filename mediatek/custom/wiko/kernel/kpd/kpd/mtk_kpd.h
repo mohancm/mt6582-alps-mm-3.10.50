@@ -31,6 +31,7 @@
 #include <mach/upmu_common_sw.h>
 #include <mach/upmu_hw.h>
 
+#define KPD_PWRKEY_MAP KEY_POWER
 #define KPD_PWRKEY_USE_EINT KPD_NO
 #define KPD_PWRKEY_USE_PMIC KPD_YES
 #define KPD_DRV_CTRL_BACKLIGHT	KPD_NO	/* retired, move to Lights framework */
@@ -77,10 +78,10 @@ static inline void kpd_pwrkey_pmic_handler(unsigned long data){}
 void kpd_pmic_rstkey_handler(unsigned long pressed);
 
 //#define ONEKEY_REBOOT_NORMAL_MODE
-//#define TWOKEY_REBOOT_NORMAL_MODE
+#define TWOKEY_REBOOT_NORMAL_MODE
 //#define ONEKEY_REBOOT_OTHER_MODE
-//#define TWOKEY_REBOOT_OTHER_MODE
-//#define KPD_PMIC_RSTKEY_MAP KEY_VOLUMEDOWN
-//#define KPD_PMIC_LPRST_TD 0 /* timeout period. 0: 7sec; 1: 11sec; 2: 14sec; 3: 5sec */
+#define TWOKEY_REBOOT_OTHER_MODE
+#define KPD_PMIC_RSTKEY_MAP KEY_VOLUMEDOWN
+#define KPD_PMIC_LPRST_TD 1 /* timeout period. 0: 7sec; 1: 11sec; 2: 14sec; 3: 5sec */
 
 #endif

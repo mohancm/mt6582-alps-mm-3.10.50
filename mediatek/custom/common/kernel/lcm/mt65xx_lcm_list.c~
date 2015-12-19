@@ -160,7 +160,7 @@ extern ili9806e_fwvga_dsi_vdo_txd_lcm_drv;
 
 LCM_DRIVER* lcm_driver_list[] = 
 { 
-#if defined(OTM9605A_YKL_DSI_QHD)
+#if defined(R63311_FHD_DSI_VDO)
 	&otm9605a_ykl_dsi_qhd_lcm_drv,
 #endif
 #if defined(R63311_FHD_DSI_VDO)

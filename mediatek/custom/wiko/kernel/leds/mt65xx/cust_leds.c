@@ -39,8 +39,6 @@ unsigned int Cust_SetBacklight(int level, int div)
 	kal_uint32 ret=0;
 //    mtkfb_set_backlight_pwm(div);
 //    mtkfb_set_backlight_level(brightness_mapping(level));
-
-
  * To explain How to set these para for cust_led_list[] of led/backlight
  * "name" para: led or backlight
  * "mode" para:which mode for led/backlight
@@ -113,11 +111,11 @@ unsigned int Cust_SetBacklight(int level, int div)
  */
 static struct cust_mt65xx_led cust_led_list[MT65XX_LED_TYPE_TOTAL] = {
 	{"red",               MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK1,{0}},
-	{"green",             MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK0,{0}},
-	{"blue",              MT65XX_LED_MODE_NONE, -1,{0}},
+	{"green",             MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK2,{0}},
+	{"blue",              MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK0,{0}},
 	{"jogball-backlight", MT65XX_LED_MODE_NONE, -1,{0}},
 	{"keyboard-backlight",MT65XX_LED_MODE_NONE, -1,{0}},
-	{"button-backlight",  MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK2,{0}},
+	{"button-backlight",  MT65XX_LED_MODE_PMIC, MT65XX_LED_PMIC_NLED_ISINK3,{0}},
 	{"lcd-backlight",     MT65XX_LED_MODE_CUST_BLS_PWM, (int)disp_bls_set_backlight,{0}},
 };
 
@@ -125,4 +123,3 @@ struct cust_mt65xx_led *get_cust_led_list(void)
 {
 	return cust_led_list;
 }
-

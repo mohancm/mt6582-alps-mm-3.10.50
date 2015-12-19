@@ -3,12 +3,12 @@
 
 /*******************************************************************************************/
 
-  
+
 #ifndef __CAMERA_CUSTOMIZED_H
 #define __CAMERA_CUSTOMIZED_H
 
 // the angle between handset and sensor placement in clockwise, should be one of 0, 90, 270
-#define MAIN_SENSOR_ORIENTATION_ANGLE    270
+#define MAIN_SENSOR_ORIENTATION_ANGLE    90
 #define SUB_SENSOR_ORIENTATION_ANGLE      0                  // do not care if the sub sensor does not exist
 
 
@@ -16,10 +16,10 @@
 // Second, we suppose the direction of upward is 0
 // Third, it is 90, 180, 270 in clockwise
 // here we define the main sensor and sub sensor angles to deal with the jpeg orientation
-#define MAIN_SENSOR_TO_PHONE_ANGLE        270
+#define MAIN_SENSOR_TO_PHONE_ANGLE        90
 #define SUB_SENSOR_TO_PHONE_ANGLE           0
 
- 
+
 #define CAM_SIZE_QVGA_WIDTH         320
 #define CAM_SIZE_QVGA_HEIGHT        240
 #define CAM_SIZE_VGA_WIDTH            640
@@ -34,8 +34,6 @@
 #define CAM_SIZE_3M_HEIGHT             1536
 #define CAM_SIZE_5M_WIDTH              2592
 #define CAM_SIZE_5M_HEIGHT             1944
-#define CAM_SIZE_8M_WIDTH              3264
-#define CAM_SIZE_8M_HEIGHT             2448
 
 // for main sensor
 #define MAIN_NUM_OF_PREVIEW_RESOLUTION 3
