@@ -65,86 +65,7 @@
 #include <cust_alsps.h>
 #include "ap3216c.h"
 
-/*
-#if 0
-#ifdef MT6516
-#include <mach/mt6516_devs.h>
-#include <mach/mt6516_typedefs.h>
-#include <mach/mt6516_gpio.h>
-#include <mach/mt6516_pll.h>
-#endif
 
-#ifdef MT6573
-#include <mach/mt6573_devs.h>
-#include <mach/mt6573_typedefs.h>
-#include <mach/mt6573_gpio.h>
-#include <mach/mt6573_pll.h>
-#endif
-#ifdef MT6575
-#include <mach/mt6575_devs.h>
-#include <mach/mt6575_typedefs.h>
-#include <mach/mt6575_gpio.h>
-#include <mach/mt6575_pm_ldo.h>
-#endif
-
-#ifdef MT6577
-#include <mach/mt6577_devs.h>
-#include <mach/mt6577_typedefs.h>
-#include <mach/mt6577_gpio.h>
-#include <mach/mt6577_pm_ldo.h>
-#endif
-
-#ifdef MT6573
-extern void mt65xx_eint_unmask(unsigned int line);
-extern void mt65xx_eint_mask(unsigned int line);
-extern void mt65xx_eint_set_polarity(kal_uint8 eintno, kal_bool ACT_Polarity);
-extern void mt65xx_eint_set_hw_debounce(kal_uint8 eintno, kal_uint32 ms);
-extern kal_uint32 mt65xx_eint_set_sens(kal_uint8 eintno, kal_bool sens);
-extern void mt65xx_eint_registration(kal_uint8 eintno, kal_bool Dbounce_En,
-                                     kal_bool ACT_Polarity, void (EINT_FUNC_PTR)(void),
-                                     kal_bool auto_umask);
-
-#endif
-#ifdef MT6575
-extern void mt65xx_eint_unmask(unsigned int line);
-extern void mt65xx_eint_mask(unsigned int line);
-extern void mt65xx_eint_set_polarity(kal_uint8 eintno, kal_bool ACT_Polarity);
-extern void mt65xx_eint_set_hw_debounce(kal_uint8 eintno, kal_uint32 ms);
-extern kal_uint32 mt65xx_eint_set_sens(kal_uint8 eintno, kal_bool sens);
-extern void mt65xx_eint_registration(kal_uint8 eintno, kal_bool Dbounce_En,
-                                     kal_bool ACT_Polarity, void (EINT_FUNC_PTR)(void),
-                                     kal_bool auto_umask);
-
-#endif
-
-#ifdef MT6577
-	extern void mt65xx_eint_unmask(unsigned int line);
-	extern void mt65xx_eint_mask(unsigned int line);
-	extern void mt65xx_eint_set_polarity(unsigned int eint_num, unsigned int pol);
-	extern void mt65xx_eint_set_hw_debounce(unsigned int eint_num, unsigned int ms);
-	extern unsigned int mt65xx_eint_set_sens(unsigned int eint_num, unsigned int sens);
-	extern void mt65xx_eint_registration(unsigned int eint_num, unsigned int is_deb_en, unsigned int pol, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
-#endif
-
-
-#ifdef MT6516
-#define POWER_NONE_MACRO MT6516_POWER_NONE
-#endif
-
-#ifdef MT6573
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-#ifdef MT6575
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-#ifdef MT6577
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-#endif
-*/
-
-#if 1
 //#include <mach/mt_devs.h>
 #include <mach/mt_typedefs.h>
 #include <mach/mt_gpio.h>
@@ -152,16 +73,13 @@ extern void mt65xx_eint_registration(kal_uint8 eintno, kal_bool Dbounce_En,
 
 #define POWER_NONE_MACRO MT65XX_POWER_NONE
 
-
-extern void mt65xx_eint_unmask(unsigned int line);
-extern void mt65xx_eint_mask(unsigned int line);
-extern void mt65xx_eint_set_polarity(unsigned int eint_num, unsigned int pol);
-extern void mt65xx_eint_set_hw_debounce(unsigned int eint_num, unsigned int ms);
-extern unsigned int mt65xx_eint_set_sens(unsigned int eint_num, unsigned int sens);
-extern void mt65xx_eint_registration(unsigned int eint_num, unsigned int is_deb_en, unsigned int pol, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
-
-
-#endif
+/****************************************************************************** * extern functions*******************************************************************************/
+extern void mt_eint_mask(unsigned int eint_num);
+extern void mt_eint_unmask(unsigned int eint_num);
+extern void mt_eint_set_hw_debounce(unsigned int eint_num, unsigned int ms);
+extern void mt_eint_set_polarity(unsigned int eint_num, unsigned int pol);
+extern unsigned int mt_eint_set_sens(unsigned int eint_num, unsigned int sens);
+extern void mt_eint_registration(unsigned int eint_num, unsigned int flow, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
 
 /******************************************************************************
  * configuration
@@ -404,7 +322,7 @@ static int AP3216C_enable_ps(struct i2c_client *client, int enable)
 		atomic_set(&obj->ps_deb_on, 1);
 		atomic_set(&obj->ps_deb_end, jiffies+atomic_read(&obj->ps_debounce)/(1000/HZ));
 
-		mt65xx_eint_unmask(CUST_EINT_ALS_NUM);
+		mt_eint_unmask(CUST_EINT_ALS_NUM);
 		APS_DBG("AP3216C PS enable\n");
 	}
 	else
@@ -422,7 +340,7 @@ static int AP3216C_enable_ps(struct i2c_client *client, int enable)
 		if(0 == obj->hw->polling_mode_ps)
 		{
 			cancel_work_sync(&obj->eint_work);
-			mt65xx_eint_mask(CUST_EINT_ALS_NUM);
+			mt_eint_mask(CUST_EINT_ALS_NUM);
 		}
 		//wake_unlock(&ps_lock);
 	}
@@ -509,12 +427,12 @@ int AP3216C_setup_eint(struct i2c_client *client)
 	mt_set_gpio_pull_enable(GPIO_ALS_EINT_PIN, TRUE);
 	mt_set_gpio_pull_select(GPIO_ALS_EINT_PIN, GPIO_PULL_UP);
 
-	mt65xx_eint_set_sens(CUST_EINT_ALS_NUM, CUST_EINT_ALS_SENSITIVE);
-	mt65xx_eint_set_polarity(CUST_EINT_ALS_NUM, CUST_EINT_ALS_POLARITY);
-	mt65xx_eint_set_hw_debounce(CUST_EINT_ALS_NUM, CUST_EINT_ALS_DEBOUNCE_CN);
-	mt65xx_eint_registration(CUST_EINT_ALS_NUM, CUST_EINT_ALS_DEBOUNCE_EN, CUST_EINT_ALS_POLARITY, AP3216C_eint_func, 0);
+	//mt65xx_eint_set_sens(CUST_EINT_ALS_NUM, CUST_EINT_ALS_SENSITIVE);
+	//mt65xx_eint_set_polarity(CUST_EINT_ALS_NUM, CUST_EINT_ALS_POLARITY);
+	mt_eint_set_hw_debounce(CUST_EINT_ALS_NUM, CUST_EINT_ALS_DEBOUNCE_CN);
+	mt_eint_registration(CUST_EINT_ALS_NUM, CUST_EINT_ALS_TYPE, AP3216C_eint_func, 0);
 
-	mt65xx_eint_unmask(CUST_EINT_ALS_NUM);  
+	mt_eint_unmask(CUST_EINT_ALS_NUM);  
 	return 0;
 }
 
@@ -807,7 +725,7 @@ static void AP3216C_eint_work(struct work_struct *work)
 		}
 	}
 	
-	mt65xx_eint_unmask(CUST_EINT_ALS_NUM);      
+	mt_eint_unmask(CUST_EINT_ALS_NUM);      
 }
 
 
@@ -1379,6 +1297,7 @@ static int AP3216C_remove(struct platform_device *pdev)
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
+#if 0
 static struct platform_driver AP3216C_alsps_driver = {
 	.probe      = AP3216C_probe,
 	.remove     = AP3216C_remove,    
@@ -1387,6 +1306,28 @@ static struct platform_driver AP3216C_alsps_driver = {
 //		.owner = THIS_MODULE,
 	}
 };
+#endif
+
+#ifdef CONFIG_OF
+static const struct of_device_id alsps_of_match[] = {
+	{ .compatible = "mediatek,als_ps", },
+	{},
+};
+#endif
+
+static struct platform_driver AP3216C_alsps_driver =
+{
+	.probe      = AP3216C_probe,
+	.remove     = AP3216C_remove,    
+	.driver     = 
+	{
+		.name = "als_ps",
+        #ifdef CONFIG_OF
+		.of_match_table = alsps_of_match,
+		#endif
+	}
+};
+
 /*----------------------------------------------------------------------------*/
 static int __init AP3216C_init(void)
 {
