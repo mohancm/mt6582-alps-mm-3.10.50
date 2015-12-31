@@ -55,8 +55,8 @@ CUSTOM_HAL_EEPROM=dummy_eeprom
 CUSTOM_HAL_FLASHLIGHT=dummy_flashlight
 
 # User space image sensor driver. Define  project used all image sensors. The value is combination of CUSTOM_HAL_MAIN_IMGSENSOR, CUSTOM_HAL_MAIN_BACKUP_IMGSENSOR, CUSTOM_HAL_SUB_IMGSENSOR, and CUSTOM_HAL_SUB_BACKUP_IMGSENSOR
-CUSTOM_HAL_IMGSENSOR=ov8825_mipi_raw ov5647_mipi_raw
-
+CUSTOM_HAL_IMGSENSOR=ov5647_mipi_raw
+#ov8825_mipi_raw
 # = CUSTOM_HAL_MAIN_LENS +CUSTOM_HAL_MAIN_BACKUP_LENS + CUSTOM_HAL_SUB_LENS + CUSTOM_HAL_SUB_BACKUP_LENS
 CUSTOM_HAL_LENS=ov8825af fm50af sensordrive dummy_lens
 CUSTOM_HAL_MAIN2_IMGSENSOR=
@@ -65,8 +65,8 @@ CUSTOM_HAL_MAIN2_IMGSENSOR=
 CUSTOM_HAL_MAIN_BACKUP_LENS=sensordrive
 
 # User space image sensor  driver: Main camera (rear camera) used sensor related tuning, setting and calibration information.Value is used main sensor name.
-CUSTOM_HAL_MAIN_IMGSENSOR=ov8825_mipi_raw ov5647_mipi_raw
-
+CUSTOM_HAL_MAIN_IMGSENSOR=ov5647_mipi_raw
+#ov8825_mipi_raw
 # lens driver config for main camera
 CUSTOM_HAL_MAIN_LENS=ov8825af fm50af
 
@@ -123,8 +123,8 @@ CUSTOM_KERNEL_GYROSCOPE=
 CUSTOM_KERNEL_HEADSET=accdet
 
 # Kernel space image sensor driver. Define  project used all image sensors .The value is combination of CUSTOM_KERNEL_MAIN_IMGSENSOR, CUSTOM_KERNEL_MAIN_BACKUP_IMGSENSOR, CUSTOM_KERNEL_SUB_IMGSENSOR, and CUSTOM_KERNEL_SUB_BACKUP_IMGSENSOR
-CUSTOM_KERNEL_IMGSENSOR=ov8825_mipi_raw ov5647_mipi_raw
-
+CUSTOM_KERNEL_IMGSENSOR=ov5647_mipi_raw
+#ov8825_mipi_raw
 # key pad driver to report key event
 CUSTOM_KERNEL_KPD=kpd
 
@@ -145,8 +145,8 @@ CUSTOM_KERNEL_MAIN_BACKUP_IMGSENSOR=
 CUSTOM_KERNEL_MAIN_BACKUP_LENS=sensordrive
 
 # Kernel space image sensor driver:Main camera (rear camera) used sensor driver.Value is used main sensor name.
-CUSTOM_KERNEL_MAIN_IMGSENSOR=ov8825_mipi_raw ov5647_mipi_raw
-
+CUSTOM_KERNEL_MAIN_IMGSENSOR=ov5647_mipi_raw
+#ov8825_mipi_raw
 # lens driver config for main camera
 CUSTOM_KERNEL_MAIN_LENS=ov8825af ov8826af fm50af liteon3h7af
 

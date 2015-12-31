@@ -1486,7 +1486,7 @@ UINT32 OV5647MIPIPreview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	spin_unlock(&ov5647mipi_drv_lock);
 	//OV5647MIPIZsdCameraPreview=KAL_FALSE;
 	
-	//OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
+	OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
      spin_lock(&ov5647mipi_drv_lock);
 	OV5647MIPI_sensor.line_length = OV5647MIPI_PV_PERIOD_PIXEL_NUMS;
 	OV5647MIPI_sensor.frame_height = OV5647MIPI_PV_PERIOD_LINE_NUMS+dummy_line;
@@ -1517,7 +1517,7 @@ UINT32 OV5647MIPIZsdPreview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	OV5647MIPI_sensor.pv_mode = KAL_FALSE;
    OV5647MIPI_sensor.video_mode = KAL_FALSE;
 spin_unlock(&ov5647mipi_drv_lock);
-	//OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
+	OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
 spin_lock(&ov5647mipi_drv_lock);
 	OV5647MIPI_sensor.pclk = OV5647MIPI_CAPTURE_CLK;
 	OV5647MIPI_sensor.line_length = OV5647MIPI_FULL_PERIOD_PIXEL_NUMS;
@@ -1611,7 +1611,7 @@ UINT32 OV5647MIPI3DPreview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	
 	//OV5647MIPIZsdCameraPreview=KAL_FALSE;
 	
-	//OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
+	OV5647MIPI_set_mirror(sensor_config_data->SensorImageMirror);
 	switch (sensor_config_data->SensorOperationMode)
 	{
 	  case MSDK_SENSOR_OPERATION_MODE_VIDEO: 	  	

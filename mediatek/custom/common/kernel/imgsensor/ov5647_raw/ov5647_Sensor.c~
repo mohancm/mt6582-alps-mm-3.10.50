@@ -998,7 +998,7 @@ UINT32 OV5647Preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	spin_lock(&ov5647_drv_lock);	
 	OV5647_sensor.pv_mode = KAL_TRUE;
 	
-	OV5647_set_mirror(sensor_config_data->SensorImageMirror);
+	//OV5647_set_mirror(sensor_config_data->SensorImageMirror);
 	switch (sensor_config_data->SensorOperationMode)
 	{
 	  case MSDK_SENSOR_OPERATION_MODE_VIDEO: 	  	

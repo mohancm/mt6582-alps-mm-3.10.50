@@ -1,5 +1,5 @@
 /*******************************************************************************************/
-   
+      
 
 /*******************************************************************************************/
 
@@ -24,9 +24,10 @@
 #include "ov8825mipiraw_CameraCustomized.h"
 static DEFINE_SPINLOCK(ov8825mipiraw_drv_lock);
 
+#define OV8825_TEST_PATTERN_CHECKSUM (0xa3fe2449)
+
 #define OV8825_DEBUG
 //#define OV8825_DEBUG_SOFIA
-
 
 #ifdef OV8825_DEBUG
 	#define OV8825DB(fmt, arg...) xlog_printk(ANDROID_LOG_DEBUG, "[OV8825MIPI]" , fmt, ##arg)
@@ -45,7 +46,7 @@ static DEFINE_SPINLOCK(ov8825mipiraw_drv_lock);
 kal_uint32 OV8825_FeatureControl_PERIOD_PixelNum=OV8825_PV_PERIOD_PIXEL_NUMS;
 kal_uint32 OV8825_FeatureControl_PERIOD_LineNum=OV8825_PV_PERIOD_LINE_NUMS;
 
-static UINT16 VIDEO_MODE_TARGET_FPS = 30;
+UINT16 VIDEO_MODE_TARGET_FPS = 30;
 static BOOL ReEnteyCamera = KAL_FALSE;
 
 
@@ -75,7 +76,6 @@ kal_uint16 get_byte=0;
 }
 
 #define Sleep(ms) mdelay(ms)
-
 
 void OV8825_write_shutter(kal_uint32 shutter)
 {
@@ -110,7 +110,11 @@ void OV8825_write_shutter(kal_uint32 shutter)
         	case MSDK_SCENARIO_ID_CAMERA_ZSD:
 			case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
 				OV8825DBSOFIA("AutoFlickerMode!!! MSDK_SCENARIO_ID_CAMERA_ZSD  0!!\n");
-				min_framelength = max_shutter;// capture max_fps 24,no need calculate
+				#if defined(ZSD15FPS)
+				min_framelength = (ov8825.capPclk*10000) /(OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/148*10 ;
+				#else
+				min_framelength = (ov8825.capPclk*10000) /(OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/130*10 ;//13fps
+				#endif
 				break;
 			case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 				if(VIDEO_MODE_TARGET_FPS==30)
@@ -196,7 +200,7 @@ void OV8825_write_shutter(kal_uint32 shutter)
 		OV8825_write_cmos_sensor(0x3502, (shutter<<4) & 0xF0);	/* Don't use the fraction part. */
 
 		OV8825DBSOFIA("frame_length 2= %d\n",frame_length);
-		OV8825DB("framerate(10 base) = %d\n",(ov8825.pvPclk*10000)*10 /line_length/frame_length);
+		//OV8825DB("framerate(10 base) = %d\n",(ov8825.pvPclk*10000)*10 /line_length/frame_length);
 
 		OV8825DB("shutter=%d, extra_lines=%d, line_length=%d, frame_length=%d\n", shutter, extra_lines, line_length, frame_length);
 
@@ -257,7 +261,7 @@ void OV8825_write_shutter(kal_uint32 shutter)
 		OV8825_write_cmos_sensor(0x3501, (shutter>>4) & 0xFF);
 		OV8825_write_cmos_sensor(0x3502, (shutter<<4) & 0xF0);	/* Don't use the fraction part. */
 
-		OV8825DB("framerate(10 base) = %d\n",(ov8825.pvPclk*10000)*10 /line_length/frame_length);
+		//OV8825DB("framerate(10 base) = %d\n",(ov8825.pvPclk*10000)*10 /line_length/frame_length);
 
 		OV8825DB("shutter=%d, extra_lines=%d, line_length=%d, frame_length=%d\n", shutter, extra_lines, line_length, frame_length);
 	}
@@ -347,10 +351,14 @@ void write_OV8825_gain(kal_uint16 gain)
 void OV8825_SetGain(UINT16 iGain)
 {
 	unsigned long flags;
-	spin_lock_irqsave(&ov8825mipiraw_drv_lock,flags);
+    kal_uint16 ov8825GlobalGain=0;
+
+	ov8825GlobalGain = OV8825Gain2Reg(iGain);
+
+	spin_lock(&ov8825mipiraw_drv_lock);
 	ov8825.realGain = iGain;
-	ov8825.sensorGlobalGain = OV8825Gain2Reg(iGain);
-	spin_unlock_irqrestore(&ov8825mipiraw_drv_lock,flags);
+	ov8825.sensorGlobalGain =ov8825GlobalGain;
+	spin_unlock(&ov8825mipiraw_drv_lock);
 
 	write_OV8825_gain(ov8825.sensorGlobalGain);
 	OV8825DB("[OV8825_SetGain]ov8825.sensorGlobalGain=0x%x,ov8825.realGain=%d\n",ov8825.sensorGlobalGain,ov8825.realGain);
@@ -377,12 +385,14 @@ void OV8825_SetGain(UINT16 iGain)
 kal_uint16 read_OV8825_gain(void)
 {
 	kal_uint16 read_gain=0;
+	kal_uint16 ov8825RealGain =0;
 
 	read_gain=(((OV8825_read_cmos_sensor(0x350a)&0x01) << 8) | OV8825_read_cmos_sensor(0x350b));
+    ov8825RealGain = OV8825Reg2Gain(read_gain);
 
 	spin_lock(&ov8825mipiraw_drv_lock);
 	ov8825.sensorGlobalGain = read_gain;
-	ov8825.realGain = OV8825Reg2Gain(ov8825.sensorGlobalGain);
+	ov8825.realGain = ov8825RealGain;
 	spin_unlock(&ov8825mipiraw_drv_lock);
 
 	OV8825DB("ov8825.sensorGlobalGain=0x%x,ov8825.realGain=%d\n",ov8825.sensorGlobalGain,ov8825.realGain);
@@ -704,365 +714,6 @@ kal_bool OV8825_set_sensor_item_info(kal_uint16 group_idx, kal_uint16 item_idx, 
     }
     return KAL_TRUE;
 }
-/* [VV38] S John_Wang BUG#1807 Camera OTP functions */
-//#define OV8825_OTP
-#ifdef OV8825_OTP
-
-#define OTP_LSC
-#define OTP_WB
-
-#define OV8825_SHADING_ADD 0x5000
-#define OV8825_SHADING_VALUE_ADD 0x5800
-#define OV8825_SHADING_OFF_VALUE 0x06
-#define OV8825_SHADING_ON_VALUE 0X86
-#define BANK_SIZE 32
-#define SHADING_EMPTY 0
-#define SHADING_VALID 2
-#define SHADING_INVALID 1
-
-//*******golden sample value: module vendor provide********//
-#define GOLDEN_RG_RATIO 0x59  //R/G 85.95  =86=0x56  0108 Jouny
-#define GOLDEN_BG_RATIO 0x57  //B/G  88.67 =89=0x59  0108 Jouny
-//*******golden sample value: module vendor provide********//
-
-/********** jiaokai add for quick enter time start 130307 *************/
-#define OTP_LSCDATA_LENGTH 62
-unsigned char s_otp_lscData[OTP_LSCDATA_LENGTH] = {0};
-unsigned char rg_otp_ratio = 0;
-unsigned char bg_otp_ratio = 0;
-
-u16 s_otp_lscData_valid = 0;
-u16 s_otp_wb_ratio_valid = 0;
-/********** jiaokai add for quick enter time end 130307 *************/
-
-#define M_ID 0
-#define LENS_ID 0
-
-
-kal_bool OV8825OTPWriteSensor(kal_uint16 address, kal_uint16 para)
-{
-	 OV8825_write_cmos_sensor(address, para);	
-}
-	
-kal_uint16 OV8825OTPReadSensor(kal_uint16 address)
-{
-	kal_uint16 reVal;
-	reVal = OV8825_read_cmos_sensor(address);	
-	OV8825DB("!!!!!adress=0x%x, reVal= 0x%x!!!!!\n", address, reVal);
-	return reVal;
-}
-	
-
-u16 OV8825_update_awb_gain(u16 R_gain, u16 G_gain, u16 B_gain)
-{
-	OV8825DB("OV8825_update_awb_gain ENTER :\n ");
-
-	OV8825DB("OV8825_update_awb_gain R_gain =0x%x, G_gain=0x%x, B_gain=0x%x\n",R_gain, G_gain, B_gain);
-	
-	if (R_gain>0x400) {
-		OV8825_write_cmos_sensor(0x3400, R_gain>>8);
-		OV8825_write_cmos_sensor(0x3401, R_gain & 0x00ff);
-	}
-	if (G_gain>0x400) {
-		OV8825_write_cmos_sensor(0x3402, G_gain>>8);
-		OV8825_write_cmos_sensor(0x3403, G_gain & 0x00ff);
-	}
-	if (B_gain>0x400) {
-		OV8825_write_cmos_sensor(0x3404, B_gain>>8);
-		OV8825_write_cmos_sensor(0x3405, B_gain & 0x00ff);
-	}
-	return 0;
-}
-
-
-
-u8 OV8825_update_otp_wb(u8 Cur_RG_ratio,u8 Cur_BG_ratio)
-{
-u32 R_gain, G_gain, B_gain, G_gain_R, G_gain_B;
-u32 rg = Cur_RG_ratio;
-u32 bg = Cur_BG_ratio;
-
-OV8825DB("OV8825_update_otp_wb rg=0x%x,bg=0x%x,goldenrg=0x%x,goldenbg=0x%x\n", Cur_RG_ratio,Cur_BG_ratio,GOLDEN_RG_RATIO,GOLDEN_BG_RATIO);
-
-//calculate G gain
-//0x400 = 1x gain
-	if(bg < GOLDEN_BG_RATIO) {
-		if (rg< GOLDEN_RG_RATIO) {
-	// current_otp.bg_ratio < BG_Ratio_typical &&
-	// current_otp.rg_ratio < RG_Ratio_typical
-		G_gain = 0x400;
-		B_gain = (0x400 * GOLDEN_BG_RATIO) / bg;
-		R_gain = (0x400 * GOLDEN_RG_RATIO) / rg;
-		}
-		else {
-	// current_otp.bg_ratio < BG_Ratio_typical &&
-	// current_otp.rg_ratio >= RG_Ratio_typical
-		R_gain = 0x400;
-		G_gain = (0x400 * rg) / GOLDEN_RG_RATIO;
-		B_gain = (G_gain * GOLDEN_BG_RATIO) /bg;
-		}
-	}
-	else {
-		if (rg < GOLDEN_RG_RATIO) {
-	// current_otp.bg_ratio >= BG_Ratio_typical &&
-	// current_otp.rg_ratio < RG_Ratio_typical
-		B_gain = 0x400;
-		G_gain = (0x400 * bg)/ GOLDEN_BG_RATIO;
-		R_gain = (G_gain * GOLDEN_RG_RATIO)/ rg;
-		}
-		else {
-	// current_otp.bg_ratio >= BG_Ratio_typical &&
-	// current_otp.rg_ratio >= RG_Ratio_typical
-		G_gain_B = (0x400 * bg) / GOLDEN_BG_RATIO;
-		G_gain_R = (0x400 * rg) / GOLDEN_RG_RATIO;
-		
-		if(G_gain_B > G_gain_R ) {
-		B_gain = 0x400;
-		G_gain = G_gain_B;
-		R_gain = (G_gain * GOLDEN_RG_RATIO) /rg;
-		}
-		else {
-		R_gain = 0x400;
-		G_gain = G_gain_R;
-		B_gain = (G_gain * GOLDEN_BG_RATIO) / bg;
-		}
-		}
-	}
-	
-	OV8825_update_awb_gain(R_gain, G_gain, B_gain);
-	return 0;
-}
-
-
-//read data from the address of bank and save the data in iBuffer
-kal_bool OV8825_ReadOtp(u16 Bank,u16 address,unsigned char*iBuffer,u16 buffersize)
-{
-kal_bool res = KAL_TRUE;
-u16 reVal;
-u8 tempBank = (u8)Bank;
-u16 tempAddress = 0x3d00+address;
-u16 j = 0;
-u16 i=0,k=0;
-
-	OV8825DB("OV8825_ReadOtp ENTER :\n ");
-
-	while (i<buffersize)
-	{
-		j=0;
-		tempBank = ((tempBank & 0x07) | 0x08);
-		
-		OV8825DB("OV8825_ReadOtp tempBank=%d\n", tempBank);
-		OV8825OTPWriteSensor(0x3d84, tempBank);//select bank
-		OV8825OTPWriteSensor(0x3d81, 0x01);//(load)
-		Sleep(100);//10 -> 100
-		OV8825OTPWriteSensor(0x3d81,0x00);//
-		while (j<32)
-		{
-			reVal= OV8825OTPReadSensor(tempAddress);
-			*(iBuffer+i) =(u8)reVal;
-			i++;
-			j++;
-			
-			if (i>=buffersize)
-			{
-				break;
-			}
-			tempAddress++;
-			if (tempAddress>0x3d1f)
-			{
-				tempAddress = 0x3d00;
-				break;
-			}
-		}
-		
-		tempAddress = 0x3d00;
-		for(k=0;k<32;k++)
-		{
-			OV8825OTPWriteSensor(tempAddress, 0);
-			tempAddress++;
-		}
-		tempAddress = 0x3d00;
-		tempBank++;
-		Sleep(20);
-	}
-	return KAL_TRUE;
-}
-
-
-//check the flag of address is valid or not
-kal_uint8 check_OV8825_otp_flag(u16 address)
-{
-	u16 reVal;
-	u16 bank = address/BANK_SIZE;//one bank range:00~1f
-	u16 tempAddress = address%BANK_SIZE;
-	u8 tempBuf;
-	
-
-	OV8825_ReadOtp(bank,tempAddress,&tempBuf,1);//flag of group 1λ
-	reVal = tempBuf;
-
-	OV8825DB("check_OV8825_otp_flag reVal=0x%x,bank=0x%x,tempAddress=0x%x\n", reVal,bank,tempAddress);
-	
-	if (!reVal)
-	{
-	return SHADING_EMPTY; //
-	}
-	
-	reVal &= 0x80;  //get bit[7] Flag of group
-	if (reVal == 0x80) //bit7 == 1?, yes, OTP data is invalid; No, OTP data is valid 
-	{
-		return SHADING_INVALID;
-	}
-	else
-	{
-		return SHADING_VALID;
-	}
-}
-//read LSC parameter
-kal_bool OV8825ReadOTPShading(void)
-{
-	u16 lscGroupAddr[] = {0x20,0x60,0xa0};
-	u16 LSCWriteStartAddr = lscGroupAddr[0];
-	u8 i,temp1;
-	u8 index = 3;
-
-	OV8825DB("OV8825ReadOTPShading ENTER :\n ");
-	//check which group is valid
-	for(i=0;i<3;i++)
-	{
-		temp1 = check_OV8825_otp_flag(lscGroupAddr[i]);
-		if (temp1==SHADING_VALID)
-		{
-		index = i;
-		break;
-		}
-	}
-	if (index == 3)
-	{
-		OV8825DB("[OV8825OTP]No Shading OTP Data\n");
-		return KAL_FALSE;
-	}
-	//read shading from otp
-	LSCWriteStartAddr = lscGroupAddr[index];
-	int tempBank = (LSCWriteStartAddr+1)/BANK_SIZE;
-	int tempAddr = (LSCWriteStartAddr+1)%BANK_SIZE;
-
-	OV8825_ReadOtp(tempBank,tempAddr,s_otp_lscData,OTP_LSCDATA_LENGTH);
-       s_otp_lscData_valid = 1;
-	
-	return KAL_TRUE;
-}
-//read AWB data
-kal_bool OV8825ReadOTPWbPregain(void)
-{
-	u16 awbGroupAddr[] = {0x05,0x0e,0x17};
-	u16 AWBWriteStartAddr = awbGroupAddr[0];
-	u16 i,temp1;
-	unsigned char pTemp[4]={0};
-	u16 index = 3;
-	u16 RoverG_dec,BoverG_dec;
-
-	OV8825DB("OV8825ReadOTPWbPregain ENTER :\n ");
-	
-	//check which group is valid
-	for(i=0;i<3;i++)
-	{
-		temp1 = check_OV8825_otp_flag(awbGroupAddr[i]);
-		if (temp1==SHADING_VALID)
-		{
-			index = i;
-			break;
-		}
-	}
-	if (index == 3)
-	{
-	OV8825DB("No AWB OTP Data\n");
-	return KAL_FALSE;
-	}
-	
-	//read awb from otp
-	AWBWriteStartAddr = awbGroupAddr[index];
-	int tempBank = (AWBWriteStartAddr+1)/BANK_SIZE;
-	int tempAddr = (AWBWriteStartAddr+1)%BANK_SIZE;
-
-	OV8825DB("OV8825ReadOTPWbPregain AWBWriteStartAddr = 0x%x\n", AWBWriteStartAddr);
-
-	OV8825_ReadOtp(tempBank,tempAddr,pTemp,3);       
-
-       rg_otp_ratio = pTemp[1];
-	bg_otp_ratio = pTemp[2];
-	s_otp_wb_ratio_valid = 1;
-
-	return KAL_TRUE;
-}
-
-//Update LSC parameter
-kal_bool OV8825UpdateOTPShading(void)
-{
-       u8 i;
-	   
-	if (0 == s_otp_lscData_valid)
-	{
-	    OV8825DB("OV8825UpdateOTPShading No lsc OTP Data\n");
-	    return KAL_FALSE;
-	}	
-
-	//write shading parameter to sensor
-	OV8825OTPWriteSensor(OV8825_SHADING_ADD,OV8825_SHADING_OFF_VALUE);
-	for(i=0;i<OTP_LSCDATA_LENGTH;i++)
-	{
-		OV8825OTPWriteSensor(OV8825_SHADING_VALUE_ADD+i,s_otp_lscData[i]);
-		
-       // OV8825DB("OV8825OTP ADRESS:=0x%x, PARA:=0x%x\n ",OV8825_SHADING_VALUE_ADD+i,s_otp_lscData[i]);
-	}
-	OV8825OTPWriteSensor(OV8825_SHADING_ADD,OV8825_SHADING_ON_VALUE);
-	
-	mdelay(50); //1000-->200
-	return KAL_TRUE;
-}
-
-//read AWB data
-kal_bool OV8825UpdateOTPWbPregain(void)
-{
-	OV8825DB("OV8825OTPWbPregain ENTER :\n ");	
-	
-	if (0 == s_otp_wb_ratio_valid)
-	{
-	    OV8825DB("OV8825UpdateOTPWbPregain No AWB OTP Data\n");
-	    return KAL_FALSE;
-	}	
-
-	OV8825_update_otp_wb(rg_otp_ratio, bg_otp_ratio);
-
-	return KAL_TRUE;
-}
-
-//main function to call
-static void OnReadOTPOV8825(void)
-{
-	 OV8825DB("OnReadOTPOV8825 ENTER :\n ");
-    //Update AWB data
-    #ifdef OTP_WB
-	if(OV8825UpdateOTPWbPregain())
-	{
-		OV8825DB("ov8825 awb otp ok!!\n");
-	}else{
-		OV8825DB("ov8825 awb otp fail!!\n");
-	}
-    #endif
-    //Update LSC parameter
-    #ifdef OTP_LSC
-	if(OV8825UpdateOTPShading())
-	{
-		OV8825DB("ov8825 lenc otp ok!!\n");
-	}else{
-		OV8825DB("ov8825 lenc otp fail!!\n");
-	}
-    #endif
-}
-
-#endif
-/* [VV38] E John_Wang BUG#1807 Camera OTP functions */
 
 static void OV8825_SetDummy( const kal_uint32 iPixels, const kal_uint32 iLines )
 {
@@ -1074,7 +725,7 @@ static void OV8825_SetDummy( const kal_uint32 iPixels, const kal_uint32 iLines )
 		line_length = OV8825_PV_PERIOD_PIXEL_NUMS + iPixels;
 		frame_length = OV8825_PV_PERIOD_LINE_NUMS + iLines;
 	}
-	else if( SENSOR_MODE_VIDEO== ov8825.sensorMode )
+	else if( SENSOR_MODE_VIDEO== ov8825.sensorMode )	
 	{
 		line_length = OV8825_VIDEO_PERIOD_PIXEL_NUMS + iPixels;
 		frame_length = OV8825_VIDEO_PERIOD_LINE_NUMS + iLines;
@@ -1107,155 +758,55 @@ static void OV8825_SetDummy( const kal_uint32 iPixels, const kal_uint32 iLines )
 
 }   /*  OV8825_SetDummy */
 
-#ifdef OV8825_OTP
-/* [VV38] S John_Wang BUG#1807 Camera OTP functions */
-void OV8825PreviewSettingOTP(void)
-{
-	OV8825DB("OV8825PreviewSettingOTP enter :\n ");
-
-	//;//OV8830_1632*1224_setting_2lanes_520Mbps/lane_72.22MSCLK30fps
-	//;//Base_on_OV8825_APP_R1.0
-	//;//2012_2_27
-	//;//Tony Li
-	//;;;;;;;;;;;;;Any modify please inform to OV FAE;;;;;;;;;;;;;;;
-
-	OV8825_write_cmos_sensor(0x0100,0x00);//sleep
-	
-	OV8825_write_cmos_sensor(0x3003,0xce);//PLL_CTRL0 			 
-	OV8825_write_cmos_sensor(0x3004,0xE3);//PLL_CTRL1 			 
-	OV8825_write_cmos_sensor(0x3005,0x00);//PLL_CTRL2 			 
-	OV8825_write_cmos_sensor(0x3006,0x10);//0x50);//10		//PLL_CTRL3 			 
-	OV8825_write_cmos_sensor(0x3007,0x43);//0x2b);//3b		//PLL_CTRL4 			 
-	OV8825_write_cmos_sensor(0x3011,0x01);//MIPI_Lane_4_Lane		 
-	OV8825_write_cmos_sensor(0x3012,0x81);//SC_PLL CTRL_S0		 
-	OV8825_write_cmos_sensor(0x3013,0x39);//SC_PLL CTRL_S1		 
-	OV8825_write_cmos_sensor(0x3104,0x20);//SCCB_PLL				 
-	OV8825_write_cmos_sensor(0x3106,0x11);//0x11);//15		//SRB_CTRL	  
-	OV8825_write_cmos_sensor(0x3600,0x07);//ANACTRL0				 
-	OV8825_write_cmos_sensor(0x3601,0x33);//ANACTRL1				 
-	OV8825_write_cmos_sensor(0x3700,0x10);//SENCTROL0 Sensor control 
-	OV8825_write_cmos_sensor(0x3702,0x28);//SENCTROL2 Sensor control 
-	OV8825_write_cmos_sensor(0x3703,0x6c);//SENCTROL3 Sensor control 
-	OV8825_write_cmos_sensor(0x3704,0x8d);//SENCTROL4 Sensor control 
-	OV8825_write_cmos_sensor(0x3705,0x0a);//SENCTROL5 Sensor control 
-	OV8825_write_cmos_sensor(0x3706,0x27);//SENCTROL6 Sensor control 
-	OV8825_write_cmos_sensor(0x3707,0x63);//SENCTROL7 Sensor control 
-	OV8825_write_cmos_sensor(0x3708,0x40);//SENCTROL8 Sensor control 
-	OV8825_write_cmos_sensor(0x3709,0x20);//CTROL9 Sensor control 
-	OV8825_write_cmos_sensor(0x370a,0x12);//SENCTROLA Sensor control 
-	OV8825_write_cmos_sensor(0x370e,0x08);//SENCTROLE Sensor control 
-	OV8825_write_cmos_sensor(0x3711,0x07);//SENCTROL11 Sensor control
-	OV8825_write_cmos_sensor(0x3712,0x4e);//SENCTROL12 Sensor control
-	OV8825_write_cmos_sensor(0x3724,0x00);//Reserved				 
-	OV8825_write_cmos_sensor(0x3725,0xd4);//Reserved				 
-	OV8825_write_cmos_sensor(0x3726,0x00);//Reserved				 
-	OV8825_write_cmos_sensor(0x3727,0xe1);//Reserved  
-
-	/////////////////////////////////////////////////////////
-	OV8825_write_cmos_sensor(0x3800,0x00);//HS(HREF start High) 	 
-	OV8825_write_cmos_sensor(0x3801,0x00);//HS(HREF start Low)		 
-	OV8825_write_cmos_sensor(0x3802,0x00);//VS(Vertical start High)  
-	OV8825_write_cmos_sensor(0x3803,0x00);//VS(Vertical start Low)	 
-	OV8825_write_cmos_sensor(0x3804,0x0c);//HW =  3295				 
-	OV8825_write_cmos_sensor(0x3805,0xdf);//HW						 
-	OV8825_write_cmos_sensor(0x3806,0x09);//VH =  2459				 
-	OV8825_write_cmos_sensor(0x3807,0x9b);//VH	  
-	
-	OV8825_write_cmos_sensor(0x3808,0x06);//ISPHO = 1632			 
-	OV8825_write_cmos_sensor(0x3809,0x60);//ISPHO					 
-	OV8825_write_cmos_sensor(0x380a,0x04);//ISPVO = 1224			 
-	OV8825_write_cmos_sensor(0x380b,0xc8);//VO	
-	
-	OV8825_write_cmos_sensor(0x380c,0x0d);//HTS = 3516				 
-	OV8825_write_cmos_sensor(0x380d,0xbc);//HTS 	   
-	//OV8825_write_cmos_sensor(0x380e,0x04);//VTS = 1264			   
-	//OV8825_write_cmos_sensor(0x380f,0xf0);//VTS	
-	OV8825_write_cmos_sensor(0x380e,0x05);//VTS = 1264				 
-	OV8825_write_cmos_sensor(0x380f,0x1e);//VTS   
-	OV8825_write_cmos_sensor(0x3810,0x00);//HOFF = 8				 
-	OV8825_write_cmos_sensor(0x3811,0x08);//HOFF					 
-	OV8825_write_cmos_sensor(0x3812,0x00);//VOFF = 4				 
-	OV8825_write_cmos_sensor(0x3813,0x04);//VOFF					 
-	OV8825_write_cmos_sensor(0x3814,0x31);//X INC					 
-	OV8825_write_cmos_sensor(0x3815,0x31);//Y INC  
-	
-	OV8825_write_cmos_sensor(0x3820,0x80);//Timing Reg20:Vflip		 
-	OV8825_write_cmos_sensor(0x3821,0x16);//ming Reg21:Hmirror	   
-	
-	OV8825_write_cmos_sensor(0x3f00,0x00);//RAM Ctrl0			   
-	OV8825_write_cmos_sensor(0x3f01,0xfc);//RAM Ctrl1			   
-	OV8825_write_cmos_sensor(0x3f05,0x10);//RAM Ctrl5			   
-	OV8825_write_cmos_sensor(0x4600,0x04);//FO Ctrl0			  
-	OV8825_write_cmos_sensor(0x4601,0x00);//IFO Read ST High	   
-	OV8825_write_cmos_sensor(0x4602,0x78);//IFO Read ST Low 	   
-	OV8825_write_cmos_sensor(0x4837,0x1e);//0x0F);//0x28			//PI PCLK PERIOD		 
-	OV8825_write_cmos_sensor(0x5068,0x00);//CALE_CTRL			   
-	OV8825_write_cmos_sensor(0x506a,0x00);//CALE_CTRL			   
-	OV8825_write_cmos_sensor(0x5c00,0x80);//LC CTRL00			   
-	OV8825_write_cmos_sensor(0x5c01,0x00);//LC CTRL01			   
-	OV8825_write_cmos_sensor(0x5c02,0x00);//PBLC CTRL02 			 
-	OV8825_write_cmos_sensor(0x5c03,0x00);//PBLC CTRL03 			 
-	OV8825_write_cmos_sensor(0x5c04,0x00);//PBLC CTRL04 			 
-	OV8825_write_cmos_sensor(0x5c08,0x10);//PBLC CTRL08 			 
-	OV8825_write_cmos_sensor(0x6900,0x61);//CADC CTRL00  
-	OV8825_write_cmos_sensor(0x3602,0xc2);////////////////////add by tony
-	OV8825_write_cmos_sensor(0x0100,0x01);// wake up
-	//mDELAY(5);
-	
-	OV8825DB("OV8825PreviewSettingOTP exit :\n ");
-}
-/* [VV38] E John_Wang BUG#1807 Camera OTP functions */
-#endif
 void OV8825PreviewSetting(void)
 {
+
+	OV8825DB("OV8825PreviewSetting enter_2lane :\n ");
 
     if(ReEnteyCamera == KAL_TRUE)
     {
 		OV8825_write_cmos_sensor(0x0100, 0x00);
-		OV8825DB("OV8825PreviewSetting_4lane_30fps enter_sleepIn :\n ");
     }
 	else
 	{
 	    OV8825_write_cmos_sensor(0x301a,0x71);
-		OV8825DB("OV8825PreviewSetting_4lane_30fps enter_streamOff :\n ");
 	}
 	
-	OV8825DB("OV8825PreviewSetting_4lane_30fps_ob:\n ");
 	OV8825_write_cmos_sensor(0x3003,0xce);
 	OV8825_write_cmos_sensor(0x3004,0xd4);
-	OV8825_write_cmos_sensor(0x3005,0x10);
+	OV8825_write_cmos_sensor(0x3005,0x00);
 	OV8825_write_cmos_sensor(0x3006,0x10);
 	OV8825_write_cmos_sensor(0x3007,0x43);
-	OV8825_write_cmos_sensor(0x3011,0x02);
-	OV8825_write_cmos_sensor(0x3012,0x81);
+	OV8825_write_cmos_sensor(0x3011,0x01);
+	OV8825_write_cmos_sensor(0x3012,0x80); 
 	OV8825_write_cmos_sensor(0x3013,0x39);
 	OV8825_write_cmos_sensor(0x3020,0x01);
 	OV8825_write_cmos_sensor(0x3104,0x20);
-	OV8825_write_cmos_sensor(0x3106,0x11);
+	OV8825_write_cmos_sensor(0x3106,0x15);
 	//OV8825_write_cmos_sensor(0x3501,0x4e);
 	//OV8825_write_cmos_sensor(0x3502,0xa0);
 	//OV8825_write_cmos_sensor(0x350b,0x3f);
-	OV8825_write_cmos_sensor(0x3600,0x07);
-	OV8825_write_cmos_sensor(0x3601,0x33);
+	OV8825_write_cmos_sensor(0x3600,0x06);
+	OV8825_write_cmos_sensor(0x3601,0x34);
 	OV8825_write_cmos_sensor(0x3602,0xc2);
-	OV8825_write_cmos_sensor(0x3700,0x10);
-	OV8825_write_cmos_sensor(0x3702,0x28);
-	OV8825_write_cmos_sensor(0x3703,0x6c);
-	OV8825_write_cmos_sensor(0x3704,0x8d);
+	OV8825_write_cmos_sensor(0x3700,0x20);
+	OV8825_write_cmos_sensor(0x3702,0x50);
+	OV8825_write_cmos_sensor(0x3703,0xcc);
+	OV8825_write_cmos_sensor(0x3704,0x19);
 	OV8825_write_cmos_sensor(0x3705,0x32);
-	OV8825_write_cmos_sensor(0x3706,0x27);
+	OV8825_write_cmos_sensor(0x3706,0x4b);
 	OV8825_write_cmos_sensor(0x3707,0x63);
-	OV8825_write_cmos_sensor(0x3708,0x40);
-	OV8825_write_cmos_sensor(0x3709,0x20);
+	OV8825_write_cmos_sensor(0x3708,0x84);
+	OV8825_write_cmos_sensor(0x3709,0x40);
 	OV8825_write_cmos_sensor(0x370a,0x33);
 	OV8825_write_cmos_sensor(0x370d,0x0c);
-	OV8825_write_cmos_sensor(0x370e,0x08);
-	OV8825_write_cmos_sensor(0x3711,0x07);
-	OV8825_write_cmos_sensor(0x3712,0x4e);
-	OV8825_write_cmos_sensor(0x3724,0x00);
-	OV8825_write_cmos_sensor(0x3725,0xd4);
-	OV8825_write_cmos_sensor(0x3726,0x00);
-	OV8825_write_cmos_sensor(0x3727,0xf0);
+	OV8825_write_cmos_sensor(0x370e,0x00);
+	OV8825_write_cmos_sensor(0x3711,0x0f);
+	OV8825_write_cmos_sensor(0x3712,0x9c);
+	OV8825_write_cmos_sensor(0x3724,0x01);
+	OV8825_write_cmos_sensor(0x3725,0x92);
+	OV8825_write_cmos_sensor(0x3726,0x01);
+	OV8825_write_cmos_sensor(0x3727,0xc7);
 	OV8825_write_cmos_sensor(0x3800,0x00);
 	OV8825_write_cmos_sensor(0x3801,0x00);
 	OV8825_write_cmos_sensor(0x3802,0x00);
@@ -1278,7 +829,7 @@ void OV8825PreviewSetting(void)
 	OV8825_write_cmos_sensor(0x3813,0x04);
 	OV8825_write_cmos_sensor(0x3814,0x31);
 	OV8825_write_cmos_sensor(0x3815,0x31);
-	OV8825_write_cmos_sensor(0x3820,0x80);
+	OV8825_write_cmos_sensor(0x3820,0x81);
 	OV8825_write_cmos_sensor(0x3821,0x17);
 	OV8825_write_cmos_sensor(0x3f00,0x00);
 	OV8825_write_cmos_sensor(0x3f01,0xfc);
@@ -1286,7 +837,7 @@ void OV8825PreviewSetting(void)
 	OV8825_write_cmos_sensor(0x4005,0x18);
 	OV8825_write_cmos_sensor(0x4600,0x04);
 	OV8825_write_cmos_sensor(0x4601,0x00);
-	OV8825_write_cmos_sensor(0x4602,0x78);
+	OV8825_write_cmos_sensor(0x4602,0x30);
 	OV8825_write_cmos_sensor(0x4837,0x1e);
 	OV8825_write_cmos_sensor(0x5068,0x00);
 	OV8825_write_cmos_sensor(0x506a,0x00);
@@ -1297,7 +848,6 @@ void OV8825PreviewSetting(void)
 	OV8825_write_cmos_sensor(0x5c04,0x00);
 	OV8825_write_cmos_sensor(0x5c08,0x10);
 	OV8825_write_cmos_sensor(0x6900,0x60);
-	OV8825_write_cmos_sensor(0x0100,0x01);// wake up
 
     if(ReEnteyCamera == KAL_TRUE)
     {
@@ -1311,38 +861,35 @@ void OV8825PreviewSetting(void)
 	}
 	ReEnteyCamera = KAL_FALSE;
 
-    OV8825DB("OV8825PreviewSetting_4lane exit :\n ");
 }
-
-
+	
 void OV8825VideoSetting(void)
 {
 
+	OV8825DB("OV8825VideoSetting/enter_2lane OB:\n ");
 
     if(ReEnteyCamera == KAL_TRUE)
     {
 		OV8825_write_cmos_sensor(0x0100, 0x00);
-		OV8825DB("OV8825VideoSetting/4lane_16:9 enter_sleepIn :\n ");
     }
 	else
 	{
 	    OV8825_write_cmos_sensor(0x301a,0x71);
-		OV8825DB("OV8825VideoSetting/4lane_16:9 enter_streamOff :\n ");
 	}
 
-	OV8825DB("OV8825VideoSetting_ob:\n ");
 	OV8825_write_cmos_sensor(0x3003,0xce);// ;//;//PLL_CTRL0
-	OV8825_write_cmos_sensor(0x3004,0xbf);// ;//0xe0 ;//0xd8 ;//;//PLL_CTRL1, 
-	OV8825_write_cmos_sensor(0x3005,0x10);// ;//;//PLL_CTRL2
+	OV8825_write_cmos_sensor(0x3004,0xd8);//;bf ;//0xe0 ;//0xd8 ;//;//PLL_CTRL1, 
+	OV8825_write_cmos_sensor(0x3005,0x00);//;10 ;//;//PLL_CTRL2
 	OV8825_write_cmos_sensor(0x3006,0x00);// ;//(0x3006 50 ;//0x20 ;//0x10 ;//;//PLL_CTRL3
-	OV8825_write_cmos_sensor(0x3007,0x3b);// ;//(0x3007 2b ;//0x3b ;//;//PLL_CTRL4	
-	OV8825_write_cmos_sensor(0x3011,0x02);// ;//;//MIPI_Lane_2_Lane
+	OV8825_write_cmos_sensor(0x3007,0x3b);//;3b ;//(0x3007 2b ;//0x3b ;//;//PLL_CTRL4	
+	OV8825_write_cmos_sensor(0x3011,0x01);//;02 ;//;//MIPI_Lane_2_Lane
 	OV8825_write_cmos_sensor(0x3012,0x80);// ;//;//SC_PLL CTRL_S0
 	OV8825_write_cmos_sensor(0x3013,0x39);// ;//;//SC_PLL CTRL_S1
 	OV8825_write_cmos_sensor(0x3020,0x01);//
 	OV8825_write_cmos_sensor(0x3104,0x20);// ;//;//SCCB_PLL
 
 	OV8825_write_cmos_sensor(0x3106,0x15);// ;//;//SRB_CTRL
+
 
 	OV8825_write_cmos_sensor(0x3600,0x06);// ;//ANACTRL0
 	OV8825_write_cmos_sensor(0x3601,0x34);// ;//ANACTRL1
@@ -1366,25 +913,25 @@ void OV8825VideoSetting(void)
 	OV8825_write_cmos_sensor(0x3726,0x01);// ;Reserved                 
 	OV8825_write_cmos_sensor(0x3727,0xc7);// ;Reserved                 
 
-	OV8825_write_cmos_sensor(0x3800,0x00);// ;//HS(HREF start High)
-	OV8825_write_cmos_sensor(0x3801,0x00);// ;//HS(HREF start Low)
+	OV8825_write_cmos_sensor(0x3800,0x02);// ;//HS(HREF start High)
+	OV8825_write_cmos_sensor(0x3801,0x28);// ;//HS(HREF start Low)
 	OV8825_write_cmos_sensor(0x3802,0x01);// ;//VS(Vertical start High)
-	OV8825_write_cmos_sensor(0x3803,0x32);// ;//VS(Vertical start Low)
-	OV8825_write_cmos_sensor(0x3804,0x0c);// ;//HW
-	OV8825_write_cmos_sensor(0x3805,0xdf);// ;//HW
-	OV8825_write_cmos_sensor(0x3806,0x08);// ;//VH,
-	OV8825_write_cmos_sensor(0x3807,0x69);// ;//VH, 
+	OV8825_write_cmos_sensor(0x3803,0x9c);//;//VS(Vertical start Low)
+	OV8825_write_cmos_sensor(0x3804,0x0a);// ;//HW
+	OV8825_write_cmos_sensor(0x3805,0xb7);// ;//HW
+	OV8825_write_cmos_sensor(0x3806,0x07);// ;//VH,
+	OV8825_write_cmos_sensor(0x3807,0xfb);// ;//VH, 
 
-	OV8825_write_cmos_sensor(0x3808,0x0c);// ;//ISPHO
-	OV8825_write_cmos_sensor(0x3809,0xc0);// ;//ISPHO
-	OV8825_write_cmos_sensor(0x380a,0x07);// ;//ISPVO
-	OV8825_write_cmos_sensor(0x380b,0x2c);// ;//ISPVO
+	OV8825_write_cmos_sensor(0x3808,0x08);// ;//ISPHO
+	OV8825_write_cmos_sensor(0x3809,0x70);// ;//ISPHO
+	OV8825_write_cmos_sensor(0x380a,0x06);// ;//ISPVO
+	OV8825_write_cmos_sensor(0x380b,0x54);// ;//ISPVO
 
-	OV8825_write_cmos_sensor(0x380c,0x0e);// ;//HTS = 3584
+	OV8825_write_cmos_sensor(0x380c,0x0f);// ;//HTS 
 	OV8825_write_cmos_sensor(0x380d,0x30);// ;//HTS
 
 	OV8825_write_cmos_sensor(0x380e,0x07);// ;//VTS
-	OV8825_write_cmos_sensor(0x380f,0xc0);// ;//VTS
+	OV8825_write_cmos_sensor(0x380f,0x40);// ;//VTS
 
 	OV8825_write_cmos_sensor(0x3810,0x00);// ;//HOFF
 	OV8825_write_cmos_sensor(0x3811,0x10);// ;//HOFF,
@@ -1400,11 +947,10 @@ void OV8825VideoSetting(void)
 	OV8825_write_cmos_sensor(0x3f00,0x02);// ;//PSRAM Ctrl0
 	OV8825_write_cmos_sensor(0x3f01,0xfc);// ;//PSRAM Ctrl1
 	OV8825_write_cmos_sensor(0x3f05,0x10);// ;//PSRAM Ctrl5
-	OV8825_write_cmos_sensor(0x4005,0x18);//
 	OV8825_write_cmos_sensor(0x4600,0x04);// ;//VFIFO Ctrl0
 	OV8825_write_cmos_sensor(0x4601,0x00);// ;//VFIFO Read
 	OV8825_write_cmos_sensor(0x4602,0x78);// ;//VFIFO Read
-	OV8825_write_cmos_sensor(0x4837,0x1b);// ;//MIPI PCLK  18;28;
+	OV8825_write_cmos_sensor(0x4837,0x15);// ;//MIPI PCLK  18;28;
 	OV8825_write_cmos_sensor(0x5068,0x00);// ;//HSCALE_CTRL
 	OV8825_write_cmos_sensor(0x506a,0x00);// ;//VSCALE_CTRL
 	OV8825_write_cmos_sensor(0x5c00,0x80);// ;//PBLC CTRL00
@@ -1427,34 +973,30 @@ void OV8825VideoSetting(void)
 	}
 	ReEnteyCamera = KAL_FALSE;
 
-	OV8825DB("OV8825VideoSetting_16:9 exit :\n ");
 }
-
 
 void OV8825CaptureSetting(void)
 {
 
+	OV8825DB("OV8825CaptureSetting_2lane_OB:\n ");
     if(ReEnteyCamera == KAL_TRUE)
     {
 		OV8825_write_cmos_sensor(0x0100, 0x00);
-		OV8825DB("OV8825CaptureSetting_4lane_SleepIn :\n ");
     }
 	else
 	{
 	    OV8825_write_cmos_sensor(0x301a,0x71);
-		OV8825DB("OV8825CaptureSetting_4lane_streamOff :\n ");
 	}
 	
-		OV8825DB("OV8825CaptureSetting_4lane_OB:\n ");
 	OV8825_write_cmos_sensor(0x3003,0xce);// ;//PLL_CTRL0              
-		OV8825_write_cmos_sensor(0x3004,0xc2);//d8 ;//PLL_CTRL1//tony_5_8             
-		OV8825_write_cmos_sensor(0x3005,0x10);//;//PLL_CTRL2              
-		OV8825_write_cmos_sensor(0x3006,0x00);//50;10 ;//PLL_CTRL3////////////////tony              
-		OV8825_write_cmos_sensor(0x3007,0x3b);//2b;3b ;//PLL_CTRL4///////////////tony              
-		OV8825_write_cmos_sensor(0x3011,0x02);//;//MIPI_Lane_4_Lane       
-		OV8825_write_cmos_sensor(0x3012,0x80);//81;;//SC_PLL CTRL_S0        
+	OV8825_write_cmos_sensor(0x3004,0xd8);//;dc;d8 ;//PLL_CTRL1//tony_5_8             
+	OV8825_write_cmos_sensor(0x3005,0x00);// ;//PLL_CTRL2              
+	OV8825_write_cmos_sensor(0x3006,0x00);//;10;50;10 ;//PLL_CTRL3////////////////tony              
+	OV8825_write_cmos_sensor(0x3007,0x3b);//;A3;2b;3b ;//PLL_CTRL4///////////////tony              
+	OV8825_write_cmos_sensor(0x3011,0x01);// ;//MIPI_Lane_4_Lane       
+	OV8825_write_cmos_sensor(0x3012,0x80);//;;//SC_PLL CTRL_S0        
 	OV8825_write_cmos_sensor(0x3013,0x39);// ;//SC_PLL CTRL_S1      
-		OV8825_write_cmos_sensor(0x3020,0x01);// 
+	OV8825_write_cmos_sensor(0x3020,0x81);//   
 	OV8825_write_cmos_sensor(0x3104,0x20);// ;//SCCB_PLL               
 	OV8825_write_cmos_sensor(0x3106,0x15);// ;//SRB_CTRL               
 	//OV8825_write_cmos_sensor(0x3501,0x9a);//;//AEC_HIGH               
@@ -1462,25 +1004,25 @@ void OV8825CaptureSetting(void)
 	//OV8825_write_cmos_sensor(0x350b,0x3f);//;//AGC                    
 	OV8825_write_cmos_sensor(0x3600,0x06);// ;ANACTRL0                 
 	OV8825_write_cmos_sensor(0x3601,0x34);// ;ANACTRL1   
-		OV8825_write_cmos_sensor(0x3602,0x42);//add by tony_5_8                   
-		OV8825_write_cmos_sensor(0x3700,0x20);//;SENCTROL0 Sensor control 
-		OV8825_write_cmos_sensor(0x3702,0x50);//;SENCTROL2 Sensor control 
-		OV8825_write_cmos_sensor(0x3703,0xcc);//;SENCTROL3 Sensor control 
-		OV8825_write_cmos_sensor(0x3704,0x19);//;SENCTROL4 Sensor control 
-		OV8825_write_cmos_sensor(0x3705,0x32);//;SENCTROL5 Sensor control 
-		OV8825_write_cmos_sensor(0x3706,0x4b);//;SENCTROL6 Sensor control 
+	OV8825_write_cmos_sensor(0x3602,0x42);//;add by tony_5_8                   
+	OV8825_write_cmos_sensor(0x3700,0x10);// ;SENCTROL0 Sensor control 
+	OV8825_write_cmos_sensor(0x3702,0x28);// ;SENCTROL2 Sensor control 
+	OV8825_write_cmos_sensor(0x3703,0x6c);// ;SENCTROL3 Sensor control 
+	OV8825_write_cmos_sensor(0x3704,0x40);// ;SENCTROL4 Sensor control 
+	OV8825_write_cmos_sensor(0x3705,0x19);// ;SENCTROL5 Sensor control 
+	OV8825_write_cmos_sensor(0x3706,0x27);// ;SENCTROL6 Sensor control 
 	OV8825_write_cmos_sensor(0x3707,0x63);// ;SENCTROL7 Sensor control 
-		OV8825_write_cmos_sensor(0x3708,0x84);//;SENCTROL8 Sensor control 
-		OV8825_write_cmos_sensor(0x3709,0x40);//;SENCTROL9 Sensor control 
+	OV8825_write_cmos_sensor(0x3708,0x48);// ;SENCTROL8 Sensor control 
+	OV8825_write_cmos_sensor(0x3709,0x20);// ;SENCTROL9 Sensor control 
 	OV8825_write_cmos_sensor(0x370a,0x31);// ;SENCTROLA Sensor control 
-		OV8825_write_cmos_sensor(0x370d,0x00);//
+	OV8825_write_cmos_sensor(0x370d,0x00);// ;SENCTROLE Sensor control
 	OV8825_write_cmos_sensor(0x370e,0x00);// ;SENCTROLE Sensor control 
-		OV8825_write_cmos_sensor(0x3711,0x0f);//;SENCTROL11 Sensor control
-		OV8825_write_cmos_sensor(0x3712,0x9c);//;SENCTROL12 Sensor control
-		OV8825_write_cmos_sensor(0x3724,0x01);//;Reserved                 
-		OV8825_write_cmos_sensor(0x3725,0x92);//;Reserved                 
-		OV8825_write_cmos_sensor(0x3726,0x01);//;Reserved                 
-		OV8825_write_cmos_sensor(0x3727,0xc7);//;Reserved                 
+	OV8825_write_cmos_sensor(0x3711,0x07);// ;SENCTROL11 Sensor control
+	OV8825_write_cmos_sensor(0x3712,0x4e);// ;SENCTROL12 Sensor control
+	OV8825_write_cmos_sensor(0x3724,0x00);// ;Reserved                 
+	OV8825_write_cmos_sensor(0x3725,0xd4);// ;Reserved                 
+	OV8825_write_cmos_sensor(0x3726,0x00);// ;Reserved                 
+	OV8825_write_cmos_sensor(0x3727,0xf0);// ;Reserved                 
 	OV8825_write_cmos_sensor(0x3800,0x00);// ;HS(HREF start High)      
 	OV8825_write_cmos_sensor(0x3801,0x00);// ;HS(HREF start Low)       
 	OV8825_write_cmos_sensor(0x3802,0x00);// ;VS(Vertical start High)  
@@ -1494,10 +1036,10 @@ void OV8825CaptureSetting(void)
 	OV8825_write_cmos_sensor(0x380a,0x09);// ;ISPVO = 2448             
 	OV8825_write_cmos_sensor(0x380b,0x90);// ;ISPVO              
 	
-		OV8825_write_cmos_sensor(0x380c,0x0e);//;HTS = 3584
-		OV8825_write_cmos_sensor(0x380d,0x30);//00 ;HTS   Tony_5_8                   
-		OV8825_write_cmos_sensor(0x380e,0x09);//09 ;VTS = 2572/////////////tony          
-		OV8825_write_cmos_sensor(0x380f,0xf0);//b0 ;VTS                      
+	OV8825_write_cmos_sensor(0x380c,0x16);//;0e ;HTS = 3584
+	OV8825_write_cmos_sensor(0x380d,0xc0);//;30;00 ;HTS   Tony_5_8                   
+	OV8825_write_cmos_sensor(0x380e,0x09);//;0a;09 ;VTS = 2572/////////////tony          
+	OV8825_write_cmos_sensor(0x380f,0xb0);//;0c;b0 ;VTS     
 	
 	OV8825_write_cmos_sensor(0x3810,0x00);// ;HOFF = 16                
 	OV8825_write_cmos_sensor(0x3811,0x10);// ;HOFF                     
@@ -1514,7 +1056,7 @@ void OV8825CaptureSetting(void)
 	OV8825_write_cmos_sensor(0x4600,0x04);// ;VFIFO Ctrl0              
 	OV8825_write_cmos_sensor(0x4601,0x00);// ;VFIFO Read ST High       
 	OV8825_write_cmos_sensor(0x4602,0x20);// ;VFIFO Read ST Low        
-		OV8825_write_cmos_sensor(0x4837,0x1e);////18;16;28;;MIPI PCLK PERIOD/////////tony_5_8        nick_0531
+	OV8825_write_cmos_sensor(0x4837,0x19);//;//18;16;28;;MIPI PCLK PERIOD/////////tony_5_8        nick_0531
 	OV8825_write_cmos_sensor(0x5068,0x00);// ;HSCALE_CTRL              
 	OV8825_write_cmos_sensor(0x506a,0x00);// ;VSCALE_CTRL              
 	OV8825_write_cmos_sensor(0x5c00,0x80);// ;PBLC CTRL00              
@@ -1536,16 +1078,15 @@ void OV8825CaptureSetting(void)
 		OV8825_write_cmos_sensor(0x301a,0x70);
 	}
 	ReEnteyCamera = KAL_FALSE;
-	OV8825DB("OV8825CaptureSetting_4lane exit :\n ");
 }	
 
 static void OV8825_Sensor_Init(void)
 {
-	OV8825DB("OV8825_Sensor_Init 4lane_OB:\n ");	
+	OV8825DB("OV8825_Sensor_Init enter_2lane OB:\n ");	
     ReEnteyCamera = KAL_TRUE;
 		
 	OV8825_write_cmos_sensor(0x0103,0x01);//software reset
-	mdelay(5);
+	Sleep(5);
 	OV8825_write_cmos_sensor(0x3000,0x16);//; strobe disable, frex disable, vsync disable
 	OV8825_write_cmos_sensor(0x3001,0x00);//
 	OV8825_write_cmos_sensor(0x3002,0x6c);//; SCCB ID = 0x6c
@@ -1590,6 +1131,7 @@ static void OV8825_Sensor_Init(void)
 	OV8825_write_cmos_sensor(0x361a,0xB0);//; VCM clock divider, VCM clock = 24000000/0x4b0 = 20000
 	OV8825_write_cmos_sensor(0x361b,0x04);//; VCM clock divider
 	OV8825_write_cmos_sensor(0x361c,0x07);//VCM Driver current
+	
 	OV8825_write_cmos_sensor(0x3700,0x20);//
 	OV8825_write_cmos_sensor(0x3701,0x44);//; sensor control
 	OV8825_write_cmos_sensor(0x3702,0x50);//
@@ -1822,12 +1364,7 @@ static void OV8825_Sensor_Init(void)
 	OV8825_write_cmos_sensor(0x5001,0x01);//	; MWB on
 	OV8825_write_cmos_sensor(0x5000,0x06);//	; LENC off, BPC on, WPC on
 	
-	/* [VV38] S John_Wang BUG#1807 Camera OTP functions */
-	#ifdef OV8825_OTP
-		OV8825PreviewSettingOTP();
-		OnReadOTPOV8825();
-	#endif
-	/* [VV38] E John_Wang BUG#1807 Camera OTP functions */
+	
 	OV8825DB("OV8825_Sensor_Init exit :\n ");
 }   /*  OV8825_Sensor_Init  */
 
@@ -1856,7 +1393,7 @@ UINT32 OV8825Open(void)
 
 	OV8825DB("OV8825Open enter :\n ");
 	OV8825_write_cmos_sensor(0x0103,0x01);// Reset sensor
-	mDELAY(2);
+    mDELAY(2);
 
 	//  Read sensor ID to adjust I2C is OK?
 	for(i=0;i<3;i++)
@@ -1880,10 +1417,37 @@ UINT32 OV8825Open(void)
 	ov8825.DummyLines= 0;
 	ov8825.DummyPixels= 0;
 
-	ov8825.pvPclk =  (13867); 
-	ov8825.videoPclk = (21667);
-	ov8825.capPclk = (21667);
+	ov8825.pvPclk =  (13867);   
+	ov8825.videoPclk = (21667); //3.4M video  4:3
+	
+	spin_unlock(&ov8825mipiraw_drv_lock);
 
+	//#if defined(MT6575)||defined(MT6577)
+    	switch(OV8825CurrentScenarioId)
+		{
+			case MSDK_SCENARIO_ID_CAMERA_ZSD:
+				#if defined(ZSD15FPS)
+				spin_lock(&ov8825mipiraw_drv_lock);
+				ov8825.capPclk = (21667);//15fps
+				spin_unlock(&ov8825mipiraw_drv_lock);
+				#else
+				spin_lock(&ov8825mipiraw_drv_lock);
+				ov8825.capPclk = (21667);//13fps
+				spin_unlock(&ov8825mipiraw_drv_lock);
+				#endif
+				break;
+        	default:
+				spin_lock(&ov8825mipiraw_drv_lock);
+				ov8825.capPclk = (21667);
+				spin_unlock(&ov8825mipiraw_drv_lock);
+				break;
+          }
+	//#else
+	//	spin_lock(&ov8825mipiraw_drv_lock);
+	//	ov8825.capPclk = (13867);
+	//	spin_unlock(&ov8825mipiraw_drv_lock);
+	//#endif
+	spin_lock(&ov8825mipiraw_drv_lock);
 	ov8825.shutter = 0x4EA;
 	ov8825.pvShutter = 0x4EA;
 	ov8825.maxExposureLines =OV8825_PV_PERIOD_LINE_NUMS -4;
@@ -1891,7 +1455,7 @@ UINT32 OV8825Open(void)
 	ov8825.ispBaseGain = BASEGAIN;//0x40
 	ov8825.sensorGlobalGain = 0x1f;//sensor gain read from 0x350a 0x350b; 0x1f as 3.875x
 	ov8825.pvGain = 0x1f;
-	ov8825.realGain = OV8825Reg2Gain(0x1f);//ispBaseGain as 1x
+	ov8825.realGain = 0x1f;//ispBaseGain as 1x
 	spin_unlock(&ov8825mipiraw_drv_lock);
 	//OV8825DB("OV8825Reg2Gain(0x1f)=%x :\n ",OV8825Reg2Gain(0x1f));
 
@@ -1940,16 +1504,6 @@ UINT32 OV8825GetSensorID(UINT32 *sensorID)
         *sensorID = 0xFFFFFFFF;
         return ERROR_SENSOR_CONNECT_FAIL;
     }
-	/* [VV38] S John_Wang BUG#1807 Camera OTP functions */
-    /********** jiaokai add for quick enter time start 130307 *************/
-    #ifdef OV8825_OTP
-    OV8825_write_cmos_sensor(0x0100,0x01);// Reset sensor
-    mDELAY(50);
-    OV8825ReadOTPWbPregain();
-    OV8825ReadOTPShading();
-    #endif
-    /********** jiaokai add for quick enter time end 130307 *************/
-	/* [VV38] E John_Wang BUG#1807 Camera OTP functions */
     return ERROR_NONE;
 }
 
@@ -1972,19 +1526,10 @@ UINT32 OV8825GetSensorID(UINT32 *sensorID)
 *************************************************************************/
 void OV8825_SetShutter(kal_uint32 iShutter)
 {
-	if(MSDK_SCENARIO_ID_CAMERA_ZSD == OV8825CurrentScenarioId )
-	{
-		//OV8825DB("always UPDATE SHUTTER when ov8825.sensorMode == SENSOR_MODE_CAPTURE\n");
-	}
-	else{
-		if(ov8825.sensorMode == SENSOR_MODE_CAPTURE)
-		{
-			//OV8825DB("capture!!DONT UPDATE SHUTTER!!\n");
-			//return;
-		}
-	}
-	if(ov8825.shutter == iShutter)
-		return;
+	
+	//if(ov8825.shutter == iShutter)
+		//return;
+	
    spin_lock(&ov8825mipiraw_drv_lock);
    ov8825.shutter= iShutter;
    spin_unlock(&ov8825mipiraw_drv_lock);
@@ -2092,8 +1637,8 @@ void OV8825SetFlipMirror(kal_int32 imgMirror)
             OV8825_write_cmos_sensor(0x3821, (flip & (0xF9)));	//Set mirror
             break;
         case IMAGE_V_MIRROR://IMAGE_HV_MIRROR:
-            OV8825_write_cmos_sensor(0x3820, (mirror |(0x06)));	//Set mirror & flip
-            OV8825_write_cmos_sensor(0x3821, (flip |(0x06)));	//Set mirror & flip
+            OV8825_write_cmos_sensor(0x3821, (mirror |(0x06)));	//Set mirror & flip
+            OV8825_write_cmos_sensor(0x3820, (flip |(0x06)));	//Set mirror & flip
             break;
     }
 }
@@ -2133,7 +1678,6 @@ UINT32 OV8825Preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 		//OV8825DB("OV8825Preview setting!!\n");
 		OV8825PreviewSetting();
 	}
-	
 	spin_lock(&ov8825mipiraw_drv_lock);
 	ov8825.sensorMode = SENSOR_MODE_PREVIEW; // Need set preview setting after capture mode
 	ov8825.DummyPixels = 0;//define dummy pixels and lines
@@ -2148,12 +1692,11 @@ UINT32 OV8825Preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	//set mirror & flip
 	//OV8825DB("[OV8825Preview] mirror&flip: %d \n",sensor_config_data->SensorImageMirror);
 	spin_lock(&ov8825mipiraw_drv_lock);
-	ov8825.imgMirror = IMAGE_HV_MIRROR;
+	ov8825.imgMirror = sensor_config_data->SensorImageMirror;
 	spin_unlock(&ov8825mipiraw_drv_lock);
-	OV8825SetFlipMirror(IMAGE_HV_MIRROR);
+	OV8825SetFlipMirror(sensor_config_data->SensorImageMirror);
 
 	OV8825DBSOFIA("[OV8825Preview]frame_len=%x\n", ((OV8825_read_cmos_sensor(0x380e)<<8)+OV8825_read_cmos_sensor(0x380f)));
-
     mDELAY(40);
 	OV8825DB("OV8825Preview exit:\n");
     return ERROR_NONE;
@@ -2182,17 +1725,13 @@ UINT32 OV8825Video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	OV8825_FeatureControl_PERIOD_LineNum=OV8825_VIDEO_PERIOD_LINE_NUMS+ov8825.DummyLines;
 	spin_unlock(&ov8825mipiraw_drv_lock);
 
-	//OV8825_write_shutter(ov8825.shutter);
-	//write_OV8825_gain(ov8825.pvGain);
-
 	spin_lock(&ov8825mipiraw_drv_lock);
-	ov8825.imgMirror = IMAGE_HV_MIRROR;
+	ov8825.imgMirror = sensor_config_data->SensorImageMirror;
 	spin_unlock(&ov8825mipiraw_drv_lock);
-	OV8825SetFlipMirror(IMAGE_HV_MIRROR);
+	OV8825SetFlipMirror(sensor_config_data->SensorImageMirror);
 
-	//OV8825DBSOFIA("[OV8825Video]frame_len=%x\n", ((OV8825_read_cmos_sensor(0x380e)<<8)+OV8825_read_cmos_sensor(0x380f)));
-
-    mDELAY(60);
+	OV8825DBSOFIA("[OV8825Video]frame_len=%x\n", ((OV8825_read_cmos_sensor(0x380e)<<8)+OV8825_read_cmos_sensor(0x380f)));
+    mDELAY(40);
 	OV8825DB("OV8825Video exit:\n");
     return ERROR_NONE;
 }
@@ -2219,6 +1758,7 @@ UINT32 OV8825Capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	ov8825.pvShutter =shutter;
 	ov8825.sensorGlobalGain = temp_data;
 	ov8825.pvGain =ov8825.sensorGlobalGain;
+	ov8825.sensorMode = SENSOR_MODE_CAPTURE;	
 	spin_unlock(&ov8825mipiraw_drv_lock);
 
 	OV8825DB("[OV8825Capture]ov8825.shutter=%d, read_pv_shutter=%d, read_pv_gain = 0x%x\n",ov8825.shutter, shutter,ov8825.sensorGlobalGain);
@@ -2226,19 +1766,21 @@ UINT32 OV8825Capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	// Full size setting
 	OV8825CaptureSetting();
     mDELAY(40);
+    //rewrite pixel number to Register ,for mt6589 line start/end;
+	OV8825_SetDummy(ov8825.DummyPixels,ov8825.DummyLines);
 
 	spin_lock(&ov8825mipiraw_drv_lock);
 
-	ov8825.sensorMode = SENSOR_MODE_CAPTURE;
-	ov8825.imgMirror = IMAGE_HV_MIRROR;
+	ov8825.imgMirror = sensor_config_data->SensorImageMirror;
 	ov8825.DummyPixels = 0;//define dummy pixels and lines
 	ov8825.DummyLines = 0 ;
 	OV8825_FeatureControl_PERIOD_PixelNum = OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels;
 	OV8825_FeatureControl_PERIOD_LineNum = OV8825_FULL_PERIOD_LINE_NUMS + ov8825.DummyLines;
+
 	spin_unlock(&ov8825mipiraw_drv_lock);
 
 	//OV8825DB("[OV8825Capture] mirror&flip: %d\n",sensor_config_data->SensorImageMirror);
-	OV8825SetFlipMirror(IMAGE_HV_MIRROR);
+	OV8825SetFlipMirror(sensor_config_data->SensorImageMirror);
 
 	//#if defined(MT6575)||defined(MT6577)
     if(OV8825CurrentScenarioId==MSDK_SCENARIO_ID_CAMERA_ZSD)
@@ -2246,7 +1788,7 @@ UINT32 OV8825Capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 		OV8825DB("OV8825Capture exit ZSD!!\n");
 		return ERROR_NONE;
     }
-	//#endif
+	//#endif   
 
 	#if 0 //no need to calculate shutter from mt6589
 	//calculate shutter
@@ -2265,7 +1807,7 @@ UINT32 OV8825Capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 
 	OV8825_write_shutter(shutter);
 
-	//gain = read_OV8825_gain();
+	gain = read_OV8825_gain();
 
 	OV8825DB("[OV8825Capture]cap_shutter =%d , cap_read gain = 0x%x\n",shutter,read_OV8825_gain());
 	//write_OV8825_gain(ov8825.sensorGlobalGain);
@@ -2284,8 +1826,10 @@ UINT32 OV8825GetResolution(MSDK_SENSOR_RESOLUTION_INFO_STRUCT *pSensorResolution
 
 	pSensorResolution->SensorPreviewWidth	= OV8825_IMAGE_SENSOR_PV_WIDTH;
     pSensorResolution->SensorPreviewHeight	= OV8825_IMAGE_SENSOR_PV_HEIGHT;
+	
     pSensorResolution->SensorFullWidth		= OV8825_IMAGE_SENSOR_FULL_WIDTH;
     pSensorResolution->SensorFullHeight		= OV8825_IMAGE_SENSOR_FULL_HEIGHT;
+	
     pSensorResolution->SensorVideoWidth		= OV8825_IMAGE_SENSOR_VIDEO_WIDTH;
     pSensorResolution->SensorVideoHeight    = OV8825_IMAGE_SENSOR_VIDEO_HEIGHT;
 //    OV8825DB("SensorPreviewWidth:  %d.\n", pSensorResolution->SensorPreviewWidth);
@@ -2307,7 +1851,7 @@ UINT32 OV8825GetInfo(MSDK_SCENARIO_ID_ENUM ScenarioId,
     pSensorInfo->SensorFullResolutionY= OV8825_IMAGE_SENSOR_FULL_HEIGHT;
 
 	spin_lock(&ov8825mipiraw_drv_lock);
-	ov8825.imgMirror = IMAGE_HV_MIRROR;
+	ov8825.imgMirror = IMAGE_V_MIRROR;
 	spin_unlock(&ov8825mipiraw_drv_lock);
 
    	pSensorInfo->SensorOutputDataFormat= SENSOR_OUTPUT_FORMAT_RAW_B;
@@ -2336,7 +1880,7 @@ UINT32 OV8825GetInfo(MSDK_SCENARIO_ID_ENUM ScenarioId,
             pSensorInfo->SensorGrabStartX = OV8825_PV_X_START;
             pSensorInfo->SensorGrabStartY = OV8825_PV_Y_START;
 
-            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_4_LANE;
+            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_2_LANE;
             pSensorInfo->MIPIDataLowPwr2HighSpeedTermDelayCount = 0;
 	     	pSensorInfo->MIPIDataLowPwr2HighSpeedSettleDelayCount = 14;
 	    	pSensorInfo->MIPICLKLowPwr2HighSpeedTermDelayCount = 0;
@@ -2349,7 +1893,7 @@ UINT32 OV8825GetInfo(MSDK_SCENARIO_ID_ENUM ScenarioId,
             pSensorInfo->SensorGrabStartX = OV8825_VIDEO_X_START;
             pSensorInfo->SensorGrabStartY = OV8825_VIDEO_Y_START;
 
-            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_4_LANE;
+            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_2_LANE;
             pSensorInfo->MIPIDataLowPwr2HighSpeedTermDelayCount = 0;
 	     	pSensorInfo->MIPIDataLowPwr2HighSpeedSettleDelayCount = 14;
 	    	pSensorInfo->MIPICLKLowPwr2HighSpeedTermDelayCount = 0;
@@ -2363,7 +1907,7 @@ UINT32 OV8825GetInfo(MSDK_SCENARIO_ID_ENUM ScenarioId,
             pSensorInfo->SensorGrabStartX = OV8825_FULL_X_START;	//2*OV8825_IMAGE_SENSOR_PV_STARTX;
             pSensorInfo->SensorGrabStartY = OV8825_FULL_Y_START;	//2*OV8825_IMAGE_SENSOR_PV_STARTY;
 
-            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_4_LANE;
+            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_2_LANE;
             pSensorInfo->MIPIDataLowPwr2HighSpeedTermDelayCount = 0;
             pSensorInfo->MIPIDataLowPwr2HighSpeedSettleDelayCount = 14;
             pSensorInfo->MIPICLKLowPwr2HighSpeedTermDelayCount = 0;
@@ -2376,7 +1920,7 @@ UINT32 OV8825GetInfo(MSDK_SCENARIO_ID_ENUM ScenarioId,
             pSensorInfo->SensorGrabStartX = OV8825_PV_X_START;
             pSensorInfo->SensorGrabStartY = OV8825_PV_Y_START;
 
-            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_4_LANE;
+            pSensorInfo->SensorMIPILaneNumber = SENSOR_MIPI_2_LANE;
             pSensorInfo->MIPIDataLowPwr2HighSpeedTermDelayCount = 0;
 	     	pSensorInfo->MIPIDataLowPwr2HighSpeedSettleDelayCount = 14;
 	    	pSensorInfo->MIPICLKLowPwr2HighSpeedTermDelayCount = 0;
@@ -2398,15 +1942,14 @@ UINT32 OV8825Control(MSDK_SCENARIO_ID_ENUM ScenarioId, MSDK_SENSOR_EXPOSURE_WIND
 		spin_unlock(&ov8825mipiraw_drv_lock);
 		//OV8825DB("ScenarioId=%d\n",ScenarioId);
 		OV8825DB("OV8825CurrentScenarioId=%d\n",OV8825CurrentScenarioId);
-
-	switch (ScenarioId)
+    switch (ScenarioId)
     {
         case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
             OV8825Preview(pImageWindow, pSensorConfigData);
             break;
         case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 			OV8825Video(pImageWindow, pSensorConfigData);
-			break;
+			break;   
         case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
 		case MSDK_SCENARIO_ID_CAMERA_ZSD:
             OV8825Capture(pImageWindow, pSensorConfigData);
@@ -2425,7 +1968,7 @@ UINT32 OV8825SetVideoMode(UINT16 u2FrameRate)
 
     kal_uint32 MIN_Frame_length =0,frameRate=0,extralines=0;
     OV8825DB("[OV8825SetVideoMode] frame rate = %d\n", u2FrameRate);
-
+	
 	spin_lock(&ov8825mipiraw_drv_lock);
 	VIDEO_MODE_TARGET_FPS=u2FrameRate;
 	spin_unlock(&ov8825mipiraw_drv_lock);
@@ -2457,16 +2000,14 @@ UINT32 OV8825SetVideoMode(UINT16 u2FrameRate)
 		if((MIN_Frame_length <=OV8825_VIDEO_PERIOD_LINE_NUMS))
 		{
 			MIN_Frame_length = OV8825_VIDEO_PERIOD_LINE_NUMS;
-			OV8825DB("[OV8825SetVideoMode]current fps = %d\n", (ov8825.videoPclk*10000)  /(OV8825_VIDEO_PERIOD_PIXEL_NUMS)/OV8825_VIDEO_PERIOD_LINE_NUMS);
 		}
-		OV8825DB("[OV8825SetVideoMode]current fps (10 base)= %d\n", (ov8825.videoPclk*10000)*10/(OV8825_VIDEO_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/MIN_Frame_length);
 		extralines = MIN_Frame_length - OV8825_VIDEO_PERIOD_LINE_NUMS;
 
 		spin_lock(&ov8825mipiraw_drv_lock);
 		ov8825.DummyPixels = 0;//define dummy pixels and lines
 		ov8825.DummyLines = extralines ;
 		spin_unlock(&ov8825mipiraw_drv_lock);
-		
+
 		OV8825_SetDummy(ov8825.DummyPixels,extralines);
     }
 	else if(ov8825.sensorMode == SENSOR_MODE_CAPTURE)
@@ -2474,11 +2015,16 @@ UINT32 OV8825SetVideoMode(UINT16 u2FrameRate)
 		OV8825DB("-------[OV8825SetVideoMode]ZSD???---------\n");
 		if(ov8825.OV8825AutoFlickerMode == KAL_TRUE)
     	{
+			#if defined(ZSD15FPS)
     		if (u2FrameRate==15)
 			    frameRate= 148;
+			#else
+    		if (u2FrameRate==13)
+				frameRate= 130;
+			#endif
 			else
 				frameRate=u2FrameRate*10;
-
+			
 			MIN_Frame_length = (ov8825.capPclk*10000) /(OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/frameRate*10;
     	}
 		else
@@ -2490,7 +2036,7 @@ UINT32 OV8825SetVideoMode(UINT16 u2FrameRate)
 			OV8825DB("[OV8825SetVideoMode]current fps = %d\n", (ov8825.capPclk*10000) /(OV8825_FULL_PERIOD_PIXEL_NUMS)/OV8825_FULL_PERIOD_LINE_NUMS);
 
 		}
-		OV8825DB("[OV8825SetVideoMode]current fps (10 base)= %d\n", (ov8825.capPclk*10000)*10/(OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/MIN_Frame_length);
+		OV8825DB("[OV8825SetVideoMode]current fps (10 base)= %d\n", (ov8825.pvPclk*10000)*10/(OV8825_FULL_PERIOD_PIXEL_NUMS + ov8825.DummyPixels)/MIN_Frame_length);
 
 		extralines = MIN_Frame_length - OV8825_FULL_PERIOD_LINE_NUMS;
 
@@ -2510,7 +2056,7 @@ UINT32 OV8825SetAutoFlickerMode(kal_bool bEnable, UINT16 u2FrameRate)
 {
 	//return ERROR_NONE;
 
-    //OV8825DB("[OV8825SetAutoFlickerMode] frame rate(10base) = %d %d\n", bEnable, u2FrameRate);
+    OV8825DB("[OV8825SetAutoFlickerMode] frame rate(10base) = %d %d\n", bEnable, u2FrameRate);
 	if(bEnable) {   // enable auto flicker
 		spin_lock(&ov8825mipiraw_drv_lock);
 		ov8825.OV8825AutoFlickerMode = KAL_TRUE;
@@ -2529,10 +2075,20 @@ UINT32 OV8825SetTestPatternMode(kal_bool bEnable)
 {
     OV8825DB("[OV8825SetTestPatternMode] Test pattern enable:%d\n", bEnable);
 
-    return TRUE;
+    if(bEnable) 
+    {
+        OV8825_write_cmos_sensor(0x5E00,0x0080);
+    }
+    else
+    {
+        OV8825_write_cmos_sensor(0x5E00,0x0000);
+    }
+
+    return ERROR_NONE;
 }
 
-UINT32 OV8825MIPISetMaxFramerateByScenario(MSDK_SCENARIO_ID_ENUM scenarioId, MUINT32 frameRate) {
+UINT32 OV8825MIPISetMaxFramerateByScenario(MSDK_SCENARIO_ID_ENUM scenarioId, MUINT32 frameRate) 
+{
 	kal_uint32 pclk;
 	kal_int16 dummyLine;
 	kal_uint16 lineLength,frameHeight;
@@ -2552,7 +2108,7 @@ UINT32 OV8825MIPISetMaxFramerateByScenario(MSDK_SCENARIO_ID_ENUM scenarioId, MUI
 			OV8825_SetDummy(0, dummyLine);			
 			break;			
 		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
-			pclk = 216670000;
+			pclk = 147330000;
 			lineLength = OV8825_VIDEO_PERIOD_PIXEL_NUMS;
 			frameHeight = (10 * pclk)/frameRate/lineLength;
 			dummyLine = frameHeight - OV8825_VIDEO_PERIOD_LINE_NUMS;
@@ -2566,7 +2122,7 @@ UINT32 OV8825MIPISetMaxFramerateByScenario(MSDK_SCENARIO_ID_ENUM scenarioId, MUI
 			 break;
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
 		case MSDK_SCENARIO_ID_CAMERA_ZSD:			
-			pclk = 216670000;
+			pclk = 138670000;
 			lineLength = OV8825_FULL_PERIOD_PIXEL_NUMS;
 			frameHeight = (10 * pclk)/frameRate/lineLength;
 			dummyLine = frameHeight - OV8825_FULL_PERIOD_LINE_NUMS;
@@ -2600,7 +2156,7 @@ UINT32 OV8825MIPIGetDefaultFramerateByScenario(MSDK_SCENARIO_ID_ENUM scenarioId,
 			 break;
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
 		case MSDK_SCENARIO_ID_CAMERA_ZSD:
-			 *pframeRate = 234;
+			 *pframeRate = 150;
 			break;		
         case MSDK_SCENARIO_ID_CAMERA_3D_PREVIEW: //added
         case MSDK_SCENARIO_ID_CAMERA_3D_VIDEO:
@@ -2661,12 +2217,11 @@ UINT32 OV8825FeatureControl(MSDK_SENSOR_FEATURE_ENUM FeatureId,
 					*pFeatureParaLen=4;
 					break;
 				default:
-					*pFeatureReturnPara32 = 138670000;
+					*pFeatureReturnPara32 = 216670000;
 					*pFeatureParaLen=4;
 					break;
 			}
 		    break;
-
         case SENSOR_FEATURE_SET_ESHUTTER:
             OV8825_SetShutter(*pFeatureData16);
             break;
@@ -2807,6 +2362,10 @@ UINT32 OV8825FeatureControl(MSDK_SENSOR_FEATURE_ENUM FeatureId,
 		case SENSOR_FEATURE_GET_DEFAULT_FRAME_RATE_BY_SCENARIO:
 			OV8825MIPIGetDefaultFramerateByScenario((MSDK_SCENARIO_ID_ENUM)*pFeatureData32, (MUINT32 *)(*(pFeatureData32+1)));
 			break;
+        case SENSOR_FEATURE_GET_TEST_PATTERN_CHECKSUM_VALUE://for factory mode auto testing             
+            *pFeatureReturnPara32=OV8825_TEST_PATTERN_CHECKSUM;           
+            *pFeatureParaLen=4;                             
+        break;
         default:
             break;
     }
@@ -2832,4 +2391,5 @@ UINT32 OV8825_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
 
     return ERROR_NONE;
 }   /* SensorInit() */
+
 
