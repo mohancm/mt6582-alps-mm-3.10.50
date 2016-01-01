@@ -806,7 +806,7 @@ void Auddrv_DL_Interrupt_Handler(void)  // irq1 ISR handler
     {
         PRINTK_AUDDRV("[Auddrv] HW_Cur_ReadIdx ==[%d] AudDrvSuspendStatus = [%d]\n", HW_Cur_ReadIdx, AudDrvSuspendStatus);
         HW_Cur_ReadIdx = Afe_Block->pucPhysBufAddr;
-        AudIrqReset = true;
+        AudIrqReset = true; //
     }
     HW_memory_index = (HW_Cur_ReadIdx - Afe_Block->pucPhysBufAddr);
     /*
@@ -944,10 +944,9 @@ static irqreturn_t AudDrv_IRQ_handler(int irq, void *dev_id)
         PRINTK_AUDDRV("IRQ Handle Exception");
         goto AudDrv_IRQ_handler_exit;
     }
-    
+    CheckInterruptTiming();
     if (u4RegValue & INTERRUPT_IRQ1_MCU)
     {
-        CheckInterruptTiming();
         Auddrv_DL_Interrupt_Handler();
     }
     if (u4RegValue & INTERRUPT_IRQ2_MCU)
@@ -1530,7 +1529,7 @@ static int AudDrv_remove(struct platform_device *dev)
 static void AudDrv_shutdown(struct platform_device *dev)
 {
     PRINTK_AUDDRV("+AudDrv_shutdown \n");
-    Speaker_DeInit();
+    //Speaker_DeInit();
     PRINTK_AUDDRV("-AudDrv_shutdown \n");
 }
 
@@ -2820,7 +2819,7 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
     int  ret = 0;
     Register_Control Reg_Data;
-    AMP_Control AMPParam;
+//    AMP_Control AMPParam;
     switch (cmd)
     {
             PRINTK_AUDDRV("AudDrv_ioctl cmd = %u arg = %lu\n", cmd, arg);
@@ -3003,11 +3002,11 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
                 //PRINTK_AUDDRV("%s disable_dpidle_by_bit\n",__FUNCTION__);
             }
 #endif
-            AudDrv_Clk_On();
+//            AudDrv_Clk_On();
             Auddrv_Set_MemIF_Fp(fp, arg);
             Auddrv_Add_MemIF_Counter(arg);
             CheckPowerState();
-            AudDrv_Clk_Off();			
+//            AudDrv_Clk_Off();			
             break;
         }
         case STANDBY_MEMIF_TYPE:
@@ -3022,12 +3021,12 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
                 //PRINTK_AUDDRV("%s enable_dpidle_by_bit\n",__FUNCTION__);
             }
 #endif
-            AudDrv_Clk_On();
+ //           AudDrv_Clk_On();
             Auddrv_Check_Irq();
             Auddrv_Release_MemIF_Fp(fp, arg);
             Auddrv_Release_MemIF_Counter(arg);
             ClearInterruptTiming();
-            AudDrv_Clk_Off();
+ //           AudDrv_Clk_Off();
             break;
         }
         case AUD_RESTART:
@@ -3316,7 +3315,7 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             }
             break;
         }
-	case GET_EAMP_PARAMETER:
+/*	case GET_EAMP_PARAMETER:
 	{
 		PRINTK_AUDDRV("AudDrv GET_EAMP_PARAMETER \n");
 		printk("AudDrv GET_EAMP_PARAMETER \n");
@@ -3395,7 +3394,7 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		}
 		mutex_unlock(&gamp_mutex);
 		break;
-	}
+	}*/
         case SET_SPEAKER_VOL:
             PRINTK_AUDDRV("AudDrv SET_SPEAKER_VOL level:%lu \n", arg);
             Sound_Speaker_SetVolLevel((int)arg);

@@ -1,3 +1,17 @@
+/*
+* Copyright (C) 2011-2014 MediaTek Inc.
+* 
+* This program is free software: you can redistribute it and/or modify it under the terms of the 
+* GNU General Public License version 2 as published by the Free Software Foundation.
+* 
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License along with this program.
+* If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*******************************************************************************************/
 
 
@@ -8,7 +22,6 @@
 #define __SENSOR_H
 
 #define ZSD15FPS
-#define VIDEO_PREVIEW_SYNC//open this define need re-do Tuning,Don't open it by yourself
 
 typedef enum group_enum {
     PRE_GAIN=0,
@@ -88,13 +101,9 @@ typedef struct
 	#define OV8825_IMAGE_SENSOR_PV_WIDTH					(1632-32)
 	#define OV8825_IMAGE_SENSOR_PV_HEIGHT					(1224-24)
 
-#ifdef VIDEO_PREVIEW_SYNC	
-	#define OV8825_IMAGE_SENSOR_VIDEO_WIDTH					OV8825_IMAGE_SENSOR_PV_WIDTH
-	#define OV8825_IMAGE_SENSOR_VIDEO_HEIGHT				OV8825_IMAGE_SENSOR_PV_HEIGHT
-#else
 	#define OV8825_IMAGE_SENSOR_VIDEO_WIDTH					(2160-40)
 	#define OV8825_IMAGE_SENSOR_VIDEO_HEIGHT				(1620-30)
-#endif
+	
 
 	/* SENSOR SCALER FACTOR */
 	#define OV8825_PV_SCALER_FACTOR					    	3
@@ -135,13 +144,9 @@ typedef struct
 	#define OV8825_PV_PERIOD_PIXEL_NUMS					0x0DBC  //3516
 	#define OV8825_PV_PERIOD_LINE_NUMS					0x51E	//1310
 
-#ifdef VIDEO_PREVIEW_SYNC	
-	#define OV8825_VIDEO_PERIOD_PIXEL_NUMS				OV8825_PV_PERIOD_PIXEL_NUMS
-	#define OV8825_VIDEO_PERIOD_LINE_NUMS				OV8825_PV_PERIOD_LINE_NUMS
-#else
 	#define OV8825_VIDEO_PERIOD_PIXEL_NUMS 				0x0F30	//3888
 	#define OV8825_VIDEO_PERIOD_LINE_NUMS				0x0740	//1856
-#endif
+	
 
 	#define OV8825_MIN_LINE_LENGTH						0x0AA4  //2724
 	#define OV8825_MIN_FRAME_LENGTH						0x0214  //532
