@@ -145,7 +145,8 @@ obj-$(CONFIG_MTK_EEMCS_DRIVER) +=  eemcs/
 obj-$(CONFIG_MTK_NFC) += nfc/
 obj-$(CONFIG_ZRAM)	+= mlog/
 
-#obj-y	+= cam_cal/dummy_eeprom/
+obj-y	+= cam_cal/dummy_eeprom/
+obj-y	+= eeprom/dummy_eeprom/
 obj-$(CONFIG_MTK_CAM_CAL_GT24C32A_SUPPORT)	+= cam_cal/GT24c32a_eeprom/
 obj-$(CONFIG_MTK_CAM_CAL_BRCC064GWZ_3_SUPPORT) += cam_cal/BRCC064GWZ_3_eeprom/
 obj-$(CONFIG_MTK_CAM_CAL_BRCB032GWZ_3_SUPPORT) += cam_cal/BRCB032GWZ_3_eeprom/
