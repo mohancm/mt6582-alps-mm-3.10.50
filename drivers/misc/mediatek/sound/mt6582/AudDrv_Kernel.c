@@ -806,7 +806,7 @@ void Auddrv_DL_Interrupt_Handler(void)  // irq1 ISR handler
     {
         PRINTK_AUDDRV("[Auddrv] HW_Cur_ReadIdx ==[%d] AudDrvSuspendStatus = [%d]\n", HW_Cur_ReadIdx, AudDrvSuspendStatus);
         HW_Cur_ReadIdx = Afe_Block->pucPhysBufAddr;
-        AudIrqReset = true; //
+        // AudIrqReset = true; //
     }
     HW_memory_index = (HW_Cur_ReadIdx - Afe_Block->pucPhysBufAddr);
     /*
@@ -1726,7 +1726,7 @@ int AudDrv_Force_Free_Buffer(int mem_type)
 #else
             pAFE_MEM = &AFE_dL1_Control_context;
             pblock =  &(pAFE_MEM->rBlock);
-            if (1)// ((Aud_Int_Mem_Flag & (1 << MEM_DL1)) == 0) // Not use SRAM as memory
+            if /*(1)*/((Aud_Int_Mem_Flag & (1 << MEM_DL1)) == 0) // Not use SRAM as memory
             {
                 Auddrv_Free_Dma_Memory(pAFE_MEM);
             }
@@ -2047,7 +2047,7 @@ int AudDrv_Free_Buffer(struct file *fp, int mem_type)
 #else
             pAFE_MEM = &AFE_dL1_Control_context;
             pblock =  &(pAFE_MEM->rBlock);
-            if (1)//((Aud_Int_Mem_Flag & (1 << MEM_DL1)) == 0) // Not use SRAM as memory
+            if /*(1)*/((Aud_Int_Mem_Flag & (1 << MEM_DL1)) == 0) // Not use SRAM as memory
             {
             Auddrv_Free_Dma_Memory(pAFE_MEM);
             }
@@ -2799,12 +2799,12 @@ int AudDrv_GET_UL_REMAIN_TIME(struct file *fp)
  *  Get DL buffer remaining size and time stamp
  *
  ******************************************************************************/
-void AudDrv_AUDIO_REMAINING(struct file *fp, Data_Remaining *time)
+/*void AudDrv_AUDIO_REMAINING(struct file *fp, Data_Remaining *time)
 {
     do_posix_clock_monotonic_gettime(&(time->time));
     time->bytes_remaining = AudDrv_GET_DL1_REMAIN_TIME(fp);
 }
-
+*/ //disable audio remaining
 /*****************************************************************************
  * FILE OPERATION FUNCTION
  *  AudDrv_ioctl
@@ -3533,7 +3533,7 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             ret = AudDrv_GET_UL_REMAIN_TIME(fp);
             break;
         }
-	case AUDDRV_AUDIO_REMAINING:
+/*	case AUDDRV_AUDIO_REMAINING:
         {
             Data_Remaining data;
             AudDrv_AUDIO_REMAINING(fp, &data);
@@ -3543,7 +3543,7 @@ static long AudDrv_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             }
 
             break;
-        }
+        }*/
         default:
         {
             PRINTK_AUD_ERROR("AudDrv Fail IOCTL command no such ioctl cmd = %x \n", cmd);
@@ -4125,7 +4125,7 @@ static int AudDrv_remap_mmap(struct file *flip, struct vm_area_struct *vma)
     vma->vm_ops = &AudDrv_remap_vm_ops;
     AudDrv_vma_open(vma);
     */
-    return -1;
+    return 0;//-1;
 }
 
 /*****************************************************************************

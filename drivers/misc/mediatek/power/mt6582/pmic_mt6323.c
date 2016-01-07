@@ -276,7 +276,7 @@ int PMIC_IMM_GetOneChannelValue(int dwChannel, int deCount, int trimd)
 	{
 	    //Duo to HW limitation
 	    if(dwChannel!=8)
-	        udelay(300);
+	        msleep(1);
 
 	    count=0;
 	    ret_data=0;

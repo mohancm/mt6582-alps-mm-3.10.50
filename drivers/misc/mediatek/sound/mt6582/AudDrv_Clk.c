@@ -293,7 +293,8 @@ void AudDrv_ADC_Clk_On(void)
 
     if (Aud_ADC_Clk_cntr == 0)
     {
-        PRINTK_AUDDRV("+AudDrv_ADC_Clk_On enable_clock ADC clk(%x)\n", Aud_ADC_Clk_cntr);
+	hwPowerOn(MT65XX_POWER_LDO_VA28,VOL_2800 , "AUDIO");        
+PRINTK_AUDDRV("+AudDrv_ADC_Clk_On enable_clock ADC clk(%x)\n", Aud_ADC_Clk_cntr);
 #ifdef PM_MANAGER_API
         //hwPowerOn(MT65XX_POWER_LDO_VA28,VOL_2800 , "AUDIO");
 #endif
@@ -308,7 +309,8 @@ void AudDrv_ADC_Clk_Off(void)
     mutex_lock(&auddrv_pmic_mutex);
     Aud_ADC_Clk_cntr--;
     if (Aud_ADC_Clk_cntr == 0)
-    {
+    {	
+	hwPowerDown(MT65XX_POWER_LDO_VA28, "AUDIO");
         PRINTK_AUDDRV("+AudDrv_ADC_Clk_On disable_clock ADC clk(%x)\n", Aud_ADC_Clk_cntr);
 #ifdef PM_MANAGER_API
         //hwPowerDown(MT65XX_POWER_LDO_VA28, "AUDIO");

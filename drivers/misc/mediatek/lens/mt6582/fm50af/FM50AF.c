@@ -16,7 +16,7 @@
 
 #define LENS_I2C_BUSNUM 1 //LINE <> <DATE20140118> <S5500:M-Sensor can not work.> wupingzhou
 //static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("FM50AF", 0x18)};
-static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("FM50AF", 0x18)};
+static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("FM50AF", 0x19)};
 
 
 #define FM50AF_DRVNAME "FM50AF"
@@ -525,6 +525,5 @@ module_exit(FM50AF_i2C_exit);
 MODULE_DESCRIPTION("FM50AF lens module driver");
 MODULE_AUTHOR("KY Chen <ky.chen@Mediatek.com>");
 MODULE_LICENSE("GPL");
-
 
 

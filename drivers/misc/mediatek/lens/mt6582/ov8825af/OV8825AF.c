@@ -15,7 +15,7 @@
 #include "../camera/kd_camera_hw.h"
 
 #define LENS_I2C_BUSNUM 1
-static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("OV8825AF", 0x19)};
+static struct i2c_board_info __initdata kd_lens_dev={ I2C_BOARD_INFO("OV8825AF", 0x18)};
 
 
 #define OV8825AF_DRVNAME "OV8825AF"
@@ -465,13 +465,13 @@ static struct platform_driver g_stOV8825AF_Driver = {
     .suspend	= OV8825AF_suspend,
     .resume	= OV8825AF_resume,
     .driver		= {
-        .name	= "lens_actuator_ov8825af",
+        .name	= "lens_actuator1",
         .owner	= THIS_MODULE,
     }
 };
 
 static struct platform_device actuator_dev1 = {
-	.name		  = "lens_actuator_ov8825af",
+	.name		  = "lens_actuator1",
 	.id		  = -1,
 };
 
@@ -498,6 +498,5 @@ module_exit(OV8825AF_i2C_exit);
 MODULE_DESCRIPTION("OV8825AF lens module driver");
 MODULE_AUTHOR("KY Chen <ky.chen@Mediatek.com>");
 MODULE_LICENSE("GPL");
-
 
 

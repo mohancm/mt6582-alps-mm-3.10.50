@@ -14,8 +14,8 @@ static struct alsps_hw cust_alsps_hw = {
     /* MTK: modified to support AAL */
 	.als_level	= {1, 2,  4,   7,  15,  15,  100, 1000, 2000,  3000,  6000, 10000, 14000, 18000, 20000},
 	.als_value	= {15, 30, 45,  90, 130, 160,  225,  280,  580,  980,  1980,  2980,  3980, 7000,  9000, 10240},
-    .ps_threshold_high = 240, //950,// 70//метод подбора
-    .ps_threshold_low = 200, //890, //30//метод подбора
+    .ps_threshold_high = 300, //950,// 70//метод подбора
+    .ps_threshold_low = 260, //890, //30//метод подбора
     .is_batch_supported_ps = false,
     .is_batch_supported_als = false,
 };
