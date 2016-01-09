@@ -255,7 +255,7 @@
 #define GC0313MIPI_YUV_SENSOR_ID                0xD0
 #define IMX135_SENSOR_ID                        0x0135  
 #define OV16825MIPI_SENSOR_ID                       0x0168
-
+#define GC2235MIPI_SENSOR_ID			0x2235
 #define GC2035_SENSOR_ID			0x2035
 #define HI545MIPI_SENSOR_ID		0x0545 //LINE <> <20140729> <add the hi258 sunwin camera module> panzaoyan
 /* CAMERA DRIVER NAME */
@@ -351,6 +351,7 @@
 #define SENSOR_DRVNAME_SP0A19_YUV   "sp0a19yuv"
 #define SENSOR_DRVNAME_IMX135_MIPI_RAW   "imx135mipiraw"
 #define SENSOR_DRVNAME_GC0313MIPI_YUV      "gc0313mipiyuv"
+#define SENSOR_DRVNAME_GC2235_MIPI_RAW 	   "gc2235_mipi_raw"
 #define SENSOR_DRVNAME_OV16825_MIPI_RAW   "OV16825mipiraw"
 #define SENSOR_DRVNAME_OV8835_MIPI_RAW   	       "ov8835mipiraw"
 #define SENSOR_DRVNAME_HI545_RAW       "hi545_mipi_raw_sunwin" //LINE <> <20140729> <add the hi545 sunwin camera module> panzaoyan
