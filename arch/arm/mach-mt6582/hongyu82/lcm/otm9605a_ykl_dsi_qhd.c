@@ -22,13 +22,12 @@
 #define FRAME_WIDTH  										(540)
 #define FRAME_HEIGHT 										(960)
 
-#define REGFLAG_DELAY             							0XFFE
-#define REGFLAG_END_OF_TABLE      							0xFFF   // END OF REGISTERS MARKER
+#define REGFLAG_DELAY             							0XFE
+#define REGFLAG_END_OF_TABLE      							0x00   // ХЗ как он может быть нулем.
 
 #define LCM_ID	0x9605
 
 #define LCM_DSI_CMD_MODE									0
-//#define GPIO_LCD_ID_PIN 									97
 
 #ifndef TRUE
 #define   TRUE     1
@@ -74,7 +73,7 @@ static struct LCM_setting_table lcm_initialization_setting[] = {
 Поиск таблицы с конца по хекс коду 960501(0x96,0x05,0x01 соответственно)
 адреса в коментах выставлены согласно WinHex
 Спасибо человеку с 4PDA, чей никнейм я не помню. Прости меня. Не смог найти пост.
-Made by Anomalchik aka MikkiRookie
+Made by Anomalchik
 */
 {0x00,1,{0x00}},
 {0xFF,3,{0x96,0x05,0x01}},
@@ -208,8 +207,6 @@ Made by Anomalchik aka MikkiRookie
 {0x00,1,{0x00}},
 {0xE2,16,{0x01,0x08,0x0d,0x0d,0x06,0x0c,0x0a,0x09,0x05,0x08,0x10,0x08,0x0f,0x10,0x09,0x04}},
 
-
-//////////////////////////////////////
 {0x00,1,{0xB1}},
 {0xC5,1,{0x28}},
        
@@ -245,21 +242,21 @@ Made by Anomalchik aka MikkiRookie
 //{0x35,1,{0x00}},//TE
 
 {0x11,1,{0x00}},
-{REGFLAG_DELAY, 150, {}},
+{REGFLAG_DELAY, 20, {}},
 
 {0x29,1,{0x00}},
-{REGFLAG_DELAY, 60, {}},
+{REGFLAG_DELAY, 120, {}},
 {REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
 static struct LCM_setting_table lcm_sleep_out_setting[] = {
-    // Sleep Out
+	// Sleep Out
 	{0x11, 0, {0x00}},
-    {REGFLAG_DELAY, 120, {}},
+	{REGFLAG_DELAY, 120, {}},
 
-    // Display ON
+	// Display ON
 	{0x29, 0, {0x00}},
-    {REGFLAG_DELAY, 100, {}},
+	{REGFLAG_DELAY, 10, {}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
@@ -268,7 +265,7 @@ static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 	// Display off sequence
 	{0x28, 0, {0x00}},
         {REGFLAG_DELAY, 120, {}},
-    // Sleep Mode On
+	// Sleep Mode On
 	{0x10, 0, {0x00}},
         {REGFLAG_DELAY, 120, {}},//20
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
@@ -311,94 +308,47 @@ static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util)
 
 static void lcm_get_params(LCM_PARAMS *params)
 {
-    memset(params, 0, sizeof(LCM_PARAMS));
-
-    params->type   = LCM_TYPE_DSI;
-
-    params->width  = FRAME_WIDTH;
-    params->height = FRAME_HEIGHT;
-
-    // enable tearing-free
-    params->dbi.te_mode 				= LCM_DBI_TE_MODE_DISABLED;  //LCM_DBI_TE_MODE_VSYNC_ONLY;
-    params->dbi.te_edge_polarity		= LCM_POLARITY_RISING;
-
-#if (LCM_DSI_CMD_MODE)
-    params->dsi.mode   = BURST_VDO_MODE; //CMD_MODE;
-#else
-    params->dsi.mode   = BURST_VDO_MODE;//В бюрсте экран элефон работает и при буте и после анлока. Был: SYNC_EVENT_VDO_MODE;//SYNC_PULSE_VDO_MODE;
-#endif
-
-    // DSI
-    /* Command mode setting */
-    params->dsi.LANE_NUM				= LCM_TWO_LANE;
-    //The following defined the fomat for data coming from LCD engine.
-    params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
-    params->dsi.data_format.trans_seq   = LCM_DSI_TRANS_SEQ_MSB_FIRST;
-    params->dsi.data_format.padding     = LCM_DSI_PADDING_ON_LSB;
-    params->dsi.data_format.format      = LCM_DSI_FORMAT_RGB888;
-
-    // Highly depends on LCD driver capability.
-    // Not support in MT6573
-    params->dsi.packet_size=256;
-
-    // Video mode setting
-    params->dsi.intermediat_buffer_num = 2;
-
-    params->dsi.PS=LCM_PACKED_PS_24BIT_RGB888;
-
-    params->dsi.vertical_sync_active				= 4;
-    params->dsi.vertical_backporch					= 16;
-    params->dsi.vertical_frontporch					= 15;
-    params->dsi.vertical_active_line				= FRAME_HEIGHT;
-
-    params->dsi.horizontal_sync_active				= 4;
-    params->dsi.horizontal_backporch				= 32;
-    params->dsi.horizontal_frontporch				= 32;
-    params->dsi.horizontal_active_pixel				= FRAME_WIDTH;
-
-    // Bit rate calculation
-    params->dsi.pll_div1=1;		// div1=0,1,2,3;div1_real=1,2,4,4
-    params->dsi.pll_div2=0;		// div2=0,1,2,3;div2_real=1,2,4,4
-    params->dsi.fbk_div =15;		// fref=26MHz, fvco=fref*(fbk_div+1)*2/(div1_real*div2_real)
-
-    /* ESD or noise interference recovery For video mode LCM only. */ // Send TE packet to LCM in a period of n frames and check the response.
-    params->dsi.lcm_int_te_monitor = FALSE;
-    params->dsi.lcm_int_te_period = 1; // Unit : frames
-
-    // Need longer FP for more opportunity to do int. TE monitor applicably.
-    if (params->dsi.lcm_int_te_monitor)
-        params->dsi.vertical_frontporch *= 2;
-
-    // Monitor external TE (or named VSYNC) from LCM once per 2 sec. (LCM VSYNC must be wired to baseband TE pin.)
-    params->dsi.lcm_ext_te_monitor = FALSE;
-    // Non-continuous clock
-    params->dsi.noncont_clock = TRUE;
-    params->dsi.noncont_clock_period = 2; // Unit : frames
+	memset(params, 0, sizeof(LCM_PARAMS));
+	params->dsi.mode = BURST_VDO_MODE;
+	params->dsi.packet_size = 256;
+	params->type = LCM_TYPE_DSI;
+	params->dsi.LANE_NUM = LCM_TWO_LANE;
+	//result = 540;
+	params->dsi.data_format.format =  LCM_DSI_FORMAT_RGB888;
+	params->dsi.PS = LCM_PACKED_PS_24BIT_RGB888;
+	params->dsi.word_count = 1620;
+	params->dsi.vertical_sync_active = 2;
+	params->dsi.horizontal_sync_active = 2;
+	params->dbi.te_edge_polarity = LCM_POLARITY_RISING;
+	params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
+	params->dsi.data_format.trans_seq = LCM_DSI_TRANS_SEQ_MSB_FIRST;
+	params->dsi.data_format.padding = LCM_DSI_PADDING_ON_LSB;
+	params->dsi.intermediat_buffer_num = 0;
+	params->dsi.vertical_backporch = 14;
+	params->dsi.horizontal_backporch = 34;
+	params->dsi.pll_div1 = 0;
+	params->width = FRAME_WIDTH;
+	params->height = FRAME_HEIGHT;
+	params->dbi.te_mode = LCM_DBI_TE_MODE_VSYNC_ONLY;
+	params->dsi.vertical_frontporch = 16;
+	params->dsi.vertical_active_line = 960;
+	params->dsi.horizontal_frontporch = 24;
+	params->dsi.horizontal_active_pixel = 540;
+	params->dsi.pll_select = 1;
+	params->dsi.pll_div2 = 1;
+	params->dsi.fbk_div = 17;
+	//return result; 
 }
 
 static unsigned int lcm_compare_id(void);
 static void lcm_init(void)
 {
-
-#if defined(BUILD_LK)
-		upmu_set_rg_vgp2_vosel(5);
-		upmu_set_rg_vgp2_en(1);
-	
-		upmu_set_rg_vgp3_vosel(3);
-		upmu_set_rg_vgp3_en(1); 
-#else
-		hwPowerOn(MT6323_POWER_LDO_VGP2, VOL_2800, "Lance_LCM");
-		hwPowerOn(MT6323_POWER_LDO_VGP3, VOL_1800, "Lance_LCM");
-#endif
-
-   // MDELAY(100);
-
-
-    SET_RESET_PIN(1);
-    SET_RESET_PIN(0);
-    MDELAY(10);
-    SET_RESET_PIN(1);
-    MDELAY(120);
+	SET_RESET_PIN(1);
+	MDELAY(10);
+	SET_RESET_PIN(0);
+	MDELAY(10);
+	SET_RESET_PIN(1);
+	MDELAY(120); 
 
     push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
 }
@@ -406,90 +356,41 @@ static void lcm_init(void)
 
 static void lcm_suspend(void)
 {
+/*
+Да хз правильный он или нет.
+*/
 	push_table(lcm_deep_sleep_mode_in_setting, sizeof(lcm_deep_sleep_mode_in_setting) / sizeof(struct LCM_setting_table), 1);
 
-/*
-#if defined(BUILD_LK)
-		upmu_set_rg_vgp2_vosel(5);
-		upmu_set_rg_vgp2_en(0);
-	
-		upmu_set_rg_vgp3_vosel(3);
-		upmu_set_rg_vgp3_en(0); 
-#else
-		hwPowerDown(MT6323_POWER_LDO_VGP2,  "Lance_LCM");
-		hwPowerDown(MT6323_POWER_LDO_VGP3,  "Lance_LCM");
-#endif
-*/
-    SET_RESET_PIN(1);
-    SET_RESET_PIN(0);
-    MDELAY(10);
+	SET_RESET_PIN(1);
+	SET_RESET_PIN(0);
+	MDELAY(10);
 }
 
 
 static void lcm_resume(void)
 {
+/*
+Кишь отсюдова
     Lcd_Log("\n %s \n",__func__);
 
 Lcd_Log("junchao Vcom = 0x%4x\n",lcm_initialization_setting[5].para_list[0]);
-  //  lcm_init();
+*/  
 
-    SET_RESET_PIN(1);
-    SET_RESET_PIN(0);
-    MDELAY(20);
-    SET_RESET_PIN(1);
-    MDELAY(120);
-    push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
-//	push_table(lcm_sleep_out_setting, sizeof(lcm_sleep_out_setting) / sizeof(struct LCM_setting_table), 1);
+	//  lcm_init(); // Почему бы мне ее не включить?
+
+	SET_RESET_PIN(1);
+	SET_RESET_PIN(0);
+	MDELAY(20);
+	SET_RESET_PIN(1);
+	MDELAY(120);
+	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
 }
 
-/*static int get_lcd_id(void)
-{
-    mt_set_gpio_mode(GPIO_LCD_ID_PIN,0);
-    mt_set_gpio_dir(GPIO_LCD_ID_PIN,0);
-    mt_set_gpio_pull_enable(GPIO_LCD_ID_PIN,1);
-    mt_set_gpio_pull_select(GPIO_LCD_ID_PIN,0);
-    MDELAY(10);
-
-    return mt_get_gpio_in(GPIO_LCD_ID_PIN);
-}*/
 static unsigned int lcm_compare_id(void)
 {
-/*	int   array[4];
-		char  buffer[5];
-		unsigned int id=0;
-
-#if defined(BUILD_LK)
-		upmu_set_rg_vgp2_vosel(5);
-		upmu_set_rg_vgp2_en(1);
-	
-		upmu_set_rg_vgp3_vosel(3);
-		upmu_set_rg_vgp3_en(1); 
-#else
-		hwPowerOn(MT6323_POWER_LDO_VGP2, VOL_2800, "Lance_LCM");
-		hwPowerOn(MT6323_POWER_LDO_VGP3, VOL_1800, "Lance_LCM");
-#endif	
-    SET_RESET_PIN(1);
-    MDELAY(100);
-		SET_RESET_PIN(0);
-		MDELAY(100);
-		SET_RESET_PIN(1);
-		MDELAY(100);
-		
-	array[0] = 0x00083700;// read id return two byte,version and id
-	dsi_set_cmdq(array, 1, 1);
-
-	read_reg_v2(0xA1,buffer,4);
-	
-	id=(buffer[2]<<8)+buffer[3];
-#if defined(BUILD_LK)
-		
-	printf("MYCAT otm9605a, id = 0x%08x\n",  id);
-	
-#endif
-*/
+//Костыль здесь на веки вечные мухахахахах }=)
    return 1;
-	 // return ((LCM_ID == id)&&(get_lcd_id() == 1))?1:0;
-	// return (get_lcd_id()==1)?1:0;
+
 }
 
 LCM_DRIVER otm9605a_ykl_dsi_qhd_lcm_drv =
@@ -501,13 +402,5 @@ LCM_DRIVER otm9605a_ykl_dsi_qhd_lcm_drv =
         .suspend        = lcm_suspend,
         .resume         = lcm_resume,
         .compare_id    = lcm_compare_id,
-//#if (LCM_DSI_CMD_MODE)
-//        .set_backlight	= lcm_setbacklight,
-//        .update         = lcm_update,
-//#endif
-//#if defined (BIRD_ESD_CHECK)//rm esd resolve LCD  flick
-//				.esd_check = lcm_esd_check,
-//				.esd_recover = lcm_esd_recover,
-//#endif
     };
 
