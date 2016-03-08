@@ -19,15 +19,15 @@
 //  Local Constants
 // ---------------------------------------------------------------------------
 
-#define FRAME_WIDTH  										(540)
-#define FRAME_HEIGHT 										(960)
+#define FRAME_WIDTH  									(540)
+#define FRAME_HEIGHT 									(960)
 
 #define REGFLAG_DELAY             							0XFE
-#define REGFLAG_END_OF_TABLE      							0x00   // ХЗ как он может быть нулем.
+#define REGFLAG_END_OF_TABLE      							0xFFF
 
 #define LCM_ID	0x9605
 
-#define LCM_DSI_CMD_MODE									0
+#define LCM_DSI_CMD_MODE								0
 
 #ifndef TRUE
 #define   TRUE     1
@@ -249,27 +249,17 @@ Made by Anomalchik
 {REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
-static struct LCM_setting_table lcm_sleep_out_setting[] = {
+static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 	// Sleep Out
-	{0x11, 0, {0x00}},
+	{0x11, 1, {0x00}},
 	{REGFLAG_DELAY, 120, {}},
 
 	// Display ON
-	{0x29, 0, {0x00}},
+	{0x29, 1, {0x00}},
 	{REGFLAG_DELAY, 10, {}},
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
-
-static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
-	// Display off sequence
-	{0x28, 0, {0x00}},
-        {REGFLAG_DELAY, 120, {}},
-	// Sleep Mode On
-	{0x10, 0, {0x00}},
-        {REGFLAG_DELAY, 120, {}},//20
-	{REGFLAG_END_OF_TABLE, 0x00, {}}
-};
 static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 {
     unsigned int i;
@@ -376,14 +366,14 @@ static void lcm_resume(void)
 Lcd_Log("junchao Vcom = 0x%4x\n",lcm_initialization_setting[5].para_list[0]);
 */  
 
-	//  lcm_init(); // Почему бы мне ее не включить?
+	lcm_init(); // Почему бы мне ее не включить?
 
-	SET_RESET_PIN(1);
+	/*SET_RESET_PIN(1);
 	SET_RESET_PIN(0);
 	MDELAY(20);
 	SET_RESET_PIN(1);
 	MDELAY(120);
-	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
+	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);*/
 }
 
 static unsigned int lcm_compare_id(void)
