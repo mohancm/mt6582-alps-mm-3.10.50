@@ -383,9 +383,9 @@ static unsigned int lcm_compare_id(void)
 
 }
 
-LCM_DRIVER otm9605a_ykl_dsi_qhd_lcm_drv =
+LCM_DRIVER otm9605a_dsi_qhd_lcm_drv =
     {
-        .name			= "otm9605a_ykl_dsi_qhd",
+        .name			= "otm9605a_dsi_qhd",
         .set_util_funcs = lcm_set_util_funcs,
         .get_params     = lcm_get_params,
         .init           = lcm_init,

@@ -20,7 +20,7 @@
 
 //extern LCM_DRIVER nt35517_qhd_dsi_vdo_lcm_drv;
 //extern LCM_DRIVER hx8389b_qhd_dsi_vdo_tianma_lcm_drv;
-extern LCM_DRIVER otm9605a_ykl_dsi_qhd_lcm_drv;
+extern LCM_DRIVER otm9605a_dsi_qhd_lcm_drv;
 
 LCM_DRIVER* lcm_driver_list[] = 
 {
@@ -33,8 +33,8 @@ LCM_DRIVER* lcm_driver_list[] =
 	&hx8389b_qhd_dsi_vdo_tianma_lcm_drv,
 #endif
 
-#if defined(OTM9605A_YKL_DSI_QHD)
-	&otm9605a_ykl_dsi_qhd_lcm_drv,
+#if defined(OTM9605A_DSI_QHD)
+	&otm9605a_dsi_qhd_lcm_drv,
 #endif
 };
 
